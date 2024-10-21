@@ -4,16 +4,20 @@ package com.example.JavaProject.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import org.apache.catalina.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import com.example.JavaProject.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.mapping.List;
-
+import java.util.List;
 import java.time.LocalDateTime;
 
 
 @Entity
 @Table(name = "recipe")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Recipe {
 
     @Id
@@ -35,19 +39,19 @@ public class Recipe {
     @Max(5)
     private int difficulty;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    @ManyToMany(mappedBy = "likedRecipes")
-//    private List<User> likes;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-//    @ManyToMany
-//    @JoinTable(name = "recipe_ingredient",
-//                joinColumns = @JoinColumn(name = "recipe_id"),
-//                inverseJoinColumns = @JoinColumn(name = "ingredient_id")
-//    )
-//    private List<Ingredient> ingredients;
+    @ManyToMany(mappedBy = "likes")
+    private List<User> likedby;
+
+    @ManyToMany
+    @JoinTable(name = "recipe_ingredient",
+                joinColumns = @JoinColumn(name = "recipe_id"),
+                inverseJoinColumns = @JoinColumn(name = "ingredient_id")
+    )
+    private List<Ingredient> ingredients;
 
 
 }

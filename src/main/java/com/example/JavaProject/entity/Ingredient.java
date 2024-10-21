@@ -2,17 +2,16 @@ package com.example.JavaProject.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
-@Table(name = "recipe")
-public class Ingredients {
+@Table(name = "ingredient")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +23,4 @@ public class Ingredients {
     private Float quantity;
 
     private String mesurement;
-
-
-
-
 }

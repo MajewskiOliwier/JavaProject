@@ -2,18 +2,22 @@ package com.example.JavaProject.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.mapping.List;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "recipe")
+@Table(name = "user")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class User {
 
     @Id
@@ -40,17 +44,15 @@ public class User {
 
 
 
-//    @OneToMany(mappedBy = "user")
-//    private List<Recipe> recipes;
+    @OneToMany(mappedBy = "user")
+    private List<Recipe> recipes;
 
 
 
-//    @ManyToMany
-//    @JoinTable(name = "user_recipe",
-//                joinColumns = @JoinColumn(name = "user_id"),
-//                inverseJoinColumns = @JoinColumn(name = "recipe_id")
-//    )
-//    private List<Ingredient> likes;
-
-
+    @ManyToMany
+    @JoinTable(name = "user_recipe",
+                joinColumns = @JoinColumn(name = "user_id"),
+                inverseJoinColumns = @JoinColumn(name = "recipe_id")
+    )
+    private List<Recipe> likes;
 }
