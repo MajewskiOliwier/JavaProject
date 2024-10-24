@@ -25,15 +25,15 @@ public class Recipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Not
+    @NotNull
     @Column(length = 50)
     private String recipeName;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 
     @Column(name = "preparationTime")
     @Min(1)
