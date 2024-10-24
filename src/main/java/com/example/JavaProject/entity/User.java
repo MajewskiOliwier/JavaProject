@@ -2,6 +2,8 @@ package com.example.JavaProject.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,9 +29,11 @@ public class User {
     @Column(length = 50)
     private String userName;
 
+    @Min(1)
+    @Max(120)
     private Integer age;
 
-
+    @Email
     private String email;
 
     @Min(8)

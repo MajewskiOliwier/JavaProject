@@ -4,6 +4,7 @@ package com.example.JavaProject.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class Recipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Not
     @Column(length = 50)
     private String recipeName;
     @CreationTimestamp
@@ -32,7 +34,10 @@ public class Recipe {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+
     @Column(name = "preparationTime")
+    @Min(1)
+    @NotNull
     private int preparationTime;
 
     @Min(1)
