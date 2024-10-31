@@ -10,4 +10,5 @@ class JavaProjectApplicationTests {
 	void contextLoads() {
 	}
 
+
 }
