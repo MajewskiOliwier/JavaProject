@@ -23,4 +23,12 @@ public class RecipeIngredient {
     @NotNull
     @Min(1)
     private Float quantity;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "recipe_id", nullable = false)
+    private Recipe recipe;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "ingredient_id", nullable = false)
+    private Ingredient ingredient;
 }

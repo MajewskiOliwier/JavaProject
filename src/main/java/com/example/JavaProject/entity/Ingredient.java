@@ -23,11 +23,11 @@ public class Ingredient {
 
     @Column(length = 50)
     @NotNull
-    private String name;
+    private String ingredientName;
 
     @NotNull
-    private String mesurement;
+    private String measurement;
 
-    @OneToMany(mappedBy = "recipe_ingredients")
+    @OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL)
     private List<RecipeIngredient> ingredientsRecipe;
 }

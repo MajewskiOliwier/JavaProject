@@ -12,6 +12,8 @@ import lombok.Setter;
 import com.example.JavaProject.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -58,8 +60,8 @@ public class Recipe {
 //    )
 //    private List<Ingredient> ingredients;
 
-    @OneToMany(mappedBy = "recipe_ingredients")
-//    private List<Ingredient> ingredients;
+    @OneToMany(mappedBy = "recipe")
     private List<RecipeIngredient> recipeIngredients;
+
 
 }
