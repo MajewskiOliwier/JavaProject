@@ -9,4 +9,6 @@ public interface AuthenticationService {
     String register(RegisterDto registerDto);
 
     AuthenticationResponse login(LoginDto loginDto);
+
+    Long getCurrentUserId();
 }
