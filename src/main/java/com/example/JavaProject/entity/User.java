@@ -69,13 +69,6 @@ public class User implements UserDetails {
     )
     private List<Recipe> likes;
 
-//    public User (String userName, String email, String password, int age ){
-//        this.age = age;
-//        this.userName = userName;
-//        this.email = email;
-//        this.password = password;
-//
-//    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
