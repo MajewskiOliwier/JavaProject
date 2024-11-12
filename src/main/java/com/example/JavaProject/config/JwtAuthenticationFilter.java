@@ -1,20 +1,18 @@
 package com.example.JavaProject.config;
 
-import com.example.JavaProject.entity.User;
-import com.example.JavaProject.repository.UserRepository;
-import com.example.JavaProject.service.implementation.JwtServiceImpl;
-import io.jsonwebtoken.Claims;
+
+import com.example.JavaProject.service.interfaces.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,72 +20,49 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtServiceImpl jwtService;
-    private UserDetailsService userDetailsService;
-    private AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            Long userId = jwtService.getUserIdFromToken(token);
-
-            if (userId != null) {
-                User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
-                UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                        user.getUsername(),
-                        user.getPassword(),
-                        true,
-                        true,
-                        true,
-                        true,
-                        user.getAuthorities()
-                );
-
-                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    if (jwtService.validateToken(token) != null) {
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                        System.out.println("Authorization header: " + authHeader);
-                        System.out.println("Extracted token: " + token);
-                        System.out.println("User ID from token: " + userId);
-
-                    } else {
-                        System.out.println("Invalid JWT Token");
-                    }
-                } else {
-                    System.out.println("User is already authenticated");
-                }
-            } else {
-                System.out.println("User ID is null");
-            }
-        } else {
-            System.out.println("No Authorization header or Bearer token found");
-        }
-
-        // Proceed with the filter chain
-        filterChain.doFilter(request, response);
-    }
-
-
-    public void setUserDetailsService(UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService){
+        this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException{
+
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String email;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(7);
+        try {
+            email = jwtService.extractEmail(jwt);
+
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails user = userDetailsService.loadUserByUsername(email);
+                if (jwtService.isTokenValid(jwt, user)) {
+                    var authToken = new UsernamePasswordAuthenticationToken(user, null,
+                            user.getAuthorities());
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            new ObjectMapper().writeValue(response.getWriter(), e.getMessage());
+        }
     }
 }

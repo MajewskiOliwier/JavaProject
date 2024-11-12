@@ -1,14 +1,11 @@
 package com.example.JavaProject.controller;
 
-import com.example.JavaProject.dto.LoginDto;
 import com.example.JavaProject.dto.RegisterDto;
-import com.example.JavaProject.response.AuthenticationResponse;
-import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.service.interfaces.AccountManagementService;
-import com.example.JavaProject.service.interfaces.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private final AuthenticationService authenticationService;
     private final AccountManagementService accountManagementService;
 
     @PutMapping("/admin/promote/{id}")
@@ -24,10 +20,17 @@ public class AccountController {
         return new ResponseEntity<>(accountManagementService.promote(id), HttpStatus.OK);
     }
 
-//    @PutMapping("/")
-//    public ResponseEntity<LikesCountResponse> getRecipeLikeCount(@RequestBody RegisterDto registerDto){
-//        return new ResponseEntity<>(recipeService.getRecipeLikes(id), HttpStatus.OK);
-//    }
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PutMapping
+    public ResponseEntity<RegisterDto> updateAccount(@RequestBody RegisterDto registerDto){
 
+        return new ResponseEntity<>(accountManagementService.updateAccount(registerDto), HttpStatus.OK);
+    }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @DeleteMapping
+    public ResponseEntity<String> deleteAccount(){ //make fancy delete == hide
+
+        return new ResponseEntity<>(accountManagementService.deleteAccount(), HttpStatus.OK);
+    }
 }
