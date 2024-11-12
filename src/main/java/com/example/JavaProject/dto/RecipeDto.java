@@ -24,4 +24,6 @@ public class RecipeDto {
     private int preparationTime;
     private int difficulty;
     private List<IngredientDto> ingredients;
+    private String author;
+    private int likes;
 }

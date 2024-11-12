@@ -15,7 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 public class RecipeResponse {
     private String recipeName;
+    private String author;
     private int preparationTime;
     private int difficulty;
+    private int likes;
     private List<IngredientDto> ingredients;
 }
