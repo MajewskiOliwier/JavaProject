@@ -59,6 +59,8 @@ public class RecipeServiceImpl implements RecipeService {
             recipeResponse.setRecipeName(recipeDto.getRecipeName());
             recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
             recipeResponse.setDifficulty(recipeDto.getDifficulty());
+            recipeResponse.setAuthor(recipeDto.getAuthor());
+            recipeResponse.setLikes(recipeResponse.getLikes());
             recipeResponses.add(recipeResponse);
         }
 
@@ -80,12 +82,16 @@ public class RecipeServiceImpl implements RecipeService {
 
 
         List<IngredientDto> ingredientDtos = recipeDto.getIngredients();
-        return new RecipeResponse(
-                recipeDto.getRecipeName(),
-                recipeDto.getPreparationTime(),
-                recipeDto.getDifficulty(),
-                ingredientDtos
-        );
+
+
+        RecipeResponse recipeResponse = new RecipeResponse();
+        recipeResponse.setRecipeName(recipeDto.getRecipeName());
+        recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
+        recipeResponse.setAuthor(recipeDto.getAuthor());
+        recipeResponse.setLikes(recipeDto.getLikes());
+        recipeResponse.setIngredients(ingredientDtos);
+
+        return recipeResponse;
     }
 
     @Override

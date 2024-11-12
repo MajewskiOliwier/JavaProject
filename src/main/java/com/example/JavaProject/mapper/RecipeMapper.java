@@ -82,6 +82,8 @@ public class RecipeMapper {
         newRecipeDto.setRecipeName(recipe.getRecipeName());
         newRecipeDto.setDifficulty(recipe.getDifficulty());
         newRecipeDto.setPreparationTime(recipe.getPreparationTime());
+        newRecipeDto.setAuthor(recipe.getUser().getUsername());
+        newRecipeDto.setLikes((int)recipe.getLikedby().stream().count());
 
         if (recipe.getRecipeIngredients() != null && !recipe.getRecipeIngredients().isEmpty()) {
             newRecipeDto.setIngredients(
