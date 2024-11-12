@@ -50,7 +50,12 @@ public class Recipe {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToMany(mappedBy = "likes")
+    @ManyToMany
+    @JoinTable(
+            name = "recipe_likes",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<User> likedby;
 
 //    @ManyToMany

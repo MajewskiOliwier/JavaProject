@@ -29,50 +29,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService;
     private AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-//            throws ServletException, IOException {
-//
-//        String authHeader = request.getHeader("Authorization");
-//        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//            String token = authHeader.substring(7);
-//            String email = jwtService.getUserEmailFromToken(token);
-//
-//            if (email != null) {
-//                var userDetails = userDetailsService.loadUserByUsername(email);
-//
-//                if(SecurityContextHolder.getContext().getAuthentication() == null) {
-//                    if (jwtService.validateToken(token) != null) {
-//                        UsernamePasswordAuthenticationToken authToken =
-//                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//                        SecurityContextHolder.getContext().setAuthentication(authToken);
-//                        System.out.println("User authenticated: " + email);
-//                    } else {
-//                        System.out.println("Invalid JWT Token");
-//                    }
-//                }else{
-//                    System.out.println("user is already authenticated");
-//                }
-//            } else {
-//                System.out.println("Email is null");
-//            }
-//        } else {
-//            System.out.println("No Authorization header or Bearer token found");
-//        }
-//
-//        filterChain.doFilter(request, response);
-//    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Retrieve the Authorization header
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // Extract the token
-            Long userId = jwtService.getUserIdFromToken(token); // Get user ID from token claims
+            String token = authHeader.substring(7);
+            Long userId = jwtService.getUserIdFromToken(token);
 
             if (userId != null) {
                 User user = userRepository.findById(userId)
@@ -80,22 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                         user.getUsername(),
                         user.getPassword(),
-                        true, // enabled
-                        true, // accountNonExpired
-                        true, // credentialsNonExpired
-                        true, // accountNonLocked
+                        true,
+                        true,
+                        true,
+                        true,
                         user.getAuthorities()
                 );
 
-
-
-
-
-                // Check if the SecurityContext is empty (no authentication set)
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    // Validate the token
                     if (jwtService.validateToken(token) != null) {
-                        // Create an authentication token and set it in the SecurityContext
                         UsernamePasswordAuthenticationToken authToken =
                                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

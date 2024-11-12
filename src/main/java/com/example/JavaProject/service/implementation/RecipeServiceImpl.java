@@ -222,7 +222,7 @@ public class RecipeServiceImpl implements RecipeService {
         User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
 
         recipe.getLikedby().add(user);
-
-        return "Recipe liked successfully";
+        recipeRepository.save(recipe);
+        return "Recipe liked successfully ";
     }
 }
