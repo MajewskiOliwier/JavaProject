@@ -66,6 +66,13 @@ public class User implements UserDetails {
     )
     private List<Recipe> likes;
 
+    @ManyToMany
+    @JoinTable(name = "recipe_favourites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipe_id")
+    )
+    private List<Recipe> favourites;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){

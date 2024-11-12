@@ -1,8 +1,6 @@
 package com.example.JavaProject.service.interfaces;
 
 import com.example.JavaProject.dto.RecipeDto;
-import com.example.JavaProject.dto.RegisterDto;
-import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.response.RecipeResponse;
 
@@ -21,4 +19,10 @@ public interface RecipeService {
     String modifyRecipe(long id, RecipeDto recipeDto);
 
     String addLike(long id);
+
+    String addToFavourite(long id);
+
+    List<RecipeResponse> getFavouriteRecipes();
+
+    String deleteFavouriteRecipe(Long id);
 }
