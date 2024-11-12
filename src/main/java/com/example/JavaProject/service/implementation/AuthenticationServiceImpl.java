@@ -36,11 +36,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException(registerDto.getEmail()+" Email is taken");
         }
 
-        Role userRole = roleRepository.findByName("USER");
+        Role userRole = roleRepository.findByName("ROLE_USER");
         if(userRole == null){
             userRole = new Role();
-            userRole.setName("USER");
+            userRole.setName("ROLE_USER");
             roleRepository.save(userRole);
+
+            Role adminRole = new Role();
+            adminRole.setName("ROLE_ADMIN");
+            roleRepository.save(adminRole);
         }
 
         var user = User.builder()

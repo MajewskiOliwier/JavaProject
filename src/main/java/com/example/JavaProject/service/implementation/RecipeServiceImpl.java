@@ -6,6 +6,7 @@ import com.example.JavaProject.entity.Ingredient;
 import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.entity.RecipeIngredient;
 import com.example.JavaProject.entity.User;
+import com.example.JavaProject.exception.ProfileHiddenException;
 import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
 import com.example.JavaProject.repository.IngredientRepository;
@@ -47,6 +48,10 @@ public class RecipeServiceImpl implements RecipeService {
 
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
+            if (recipe.getUser().isHidden()) {
+                continue;
+            }
+
             RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
             RecipeResponse recipeResponse = new RecipeResponse();
 
@@ -76,7 +81,11 @@ public class RecipeServiceImpl implements RecipeService {
         if(recipe.isEmpty()) {
 //           throw Exception("custome Exception");
         }
+
         Recipe foundRecipe = recipe.get();
+        if (foundRecipe.getUser().isHidden()) {
+            throw new ProfileHiddenException("Profile has been deleted");
+        }
 
         RecipeDto recipeDto = recipeMapper.mapToDto(foundRecipe);
 
@@ -99,10 +108,14 @@ public class RecipeServiceImpl implements RecipeService {
         Optional<Recipe> recipe = recipeRepository.findById(id);
 
         if(recipe.isEmpty()) {
-//           throw Exception("custome Exception");
+            throw new RuntimeException("Recipe doesn't exist");
         }
 
         Recipe foundRecipe = recipe.get();
+        if(foundRecipe.getUser().isHidden()){
+            throw new ProfileHiddenException("Profile has been deleted");
+        }
+
         int likesCount =  (int)foundRecipe.getLikedby().stream().count();
         return new LikesCountResponse(
                 likesCount
@@ -118,6 +131,10 @@ public class RecipeServiceImpl implements RecipeService {
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isHidden()) {
+            return "User is banned";
+        }
 
         Recipe recipe = recipeMapper.mapToEntity(recipeDto);
         List<RecipeIngredient> recipeIngredients = new ArrayList<>();
@@ -160,6 +177,11 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         Recipe updatedRecipe = recipe.get();
+
+        if(updatedRecipe.getUser().isHidden()){
+            return "User is banned";
+        }
+
         updatedRecipe.setRecipeName(recipeDto.getRecipeName());
         updatedRecipe.setDifficulty(recipeDto.getDifficulty());
         updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());

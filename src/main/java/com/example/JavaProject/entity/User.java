@@ -1,6 +1,5 @@
 package com.example.JavaProject.entity;
 
-import com.example.JavaProject.entity.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -11,11 +10,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 
 @Entity
@@ -50,6 +47,9 @@ public class User implements UserDetails {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    private boolean isHidden;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -68,19 +68,25 @@ public class User implements UserDetails {
 
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority(role.getName()));
-        return authorities;
+    public Collection<? extends GrantedAuthority> getAuthorities(){
+        return List.of(new SimpleGrantedAuthority(role.getName()));
     }
 
     public Role getRole() {
         return role;
     }
 
+    public boolean getIsMan(){
+        return isMan;
+    }
+
     @Override
     public String getUsername() {
         return email;
+    } //is used by UserDetails in validation
+
+    public String getNormalUsername() {
+        return userName;
     }
 
     @Override
@@ -89,17 +95,7 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
     public boolean isCredentialsNonExpired() {
         return UserDetails.super.isCredentialsNonExpired();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }
