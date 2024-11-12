@@ -47,6 +47,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .userName(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .email(registerDto.getEmail())
+                .age(registerDto.getAge())
+                .isMan(registerDto.getIsMan())
                 .role(userRole)
                 .build();
 
