@@ -3,6 +3,7 @@ package com.example.JavaProject.service.implementation;
 import com.example.JavaProject.dto.LoginDto;
 import com.example.JavaProject.dto.RegisterDto;
 import com.example.JavaProject.entity.Role;
+import com.example.JavaProject.exception.UserNotFoundException;
 import com.example.JavaProject.repository.RoleRepository;
 import com.example.JavaProject.repository.UserRepository;
 import com.example.JavaProject.response.AuthenticationResponse;
@@ -117,4 +118,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         }
     }
+
+    @Override
+    public Long getCurrentUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("Principal: " + principal);
+
+        // try to refactor the instanceOf
+        if (principal instanceof UserDetails userDetails) {
+            String email = userDetails.getUsername();
+            return userRepository.findByEmail(email)
+                    .map(User::getId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
+        }
+
+        throw new UserNotFoundException("User is not authenticated");}
 }

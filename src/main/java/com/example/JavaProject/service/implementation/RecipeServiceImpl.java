@@ -5,12 +5,16 @@ import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.entity.Ingredient;
 import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.entity.RecipeIngredient;
+import com.example.JavaProject.entity.User;
 import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
 import com.example.JavaProject.repository.IngredientRepository;
 import com.example.JavaProject.repository.RecipeIngredientRepository;
 import com.example.JavaProject.repository.RecipeRepository;
+import com.example.JavaProject.repository.UserRepository;
+import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.response.RecipeResponse;
+import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -28,10 +32,13 @@ public class RecipeServiceImpl implements RecipeService {
     private RecipeRepository recipeRepository;
     private IngredientRepository ingredientRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
+    private UserRepository userRepository;
 
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
     private EntityManager entityManager;
+
+    private AuthenticationService authenticationService;
 
     @Override
     public List<RecipeResponse> getAllRecipes(){
@@ -82,10 +89,34 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
+    public LikesCountResponse getRecipeLikes(long id) {
+        Optional<Recipe> recipe = recipeRepository.findById(id);
+
+        if(recipe.isEmpty()) {
+//           throw Exception("custome Exception");
+        }
+
+        Recipe foundRecipe = recipe.get();
+        int likesCount =  (int)foundRecipe.getLikedby().stream().count();
+        return new LikesCountResponse(
+                likesCount
+        );
+    }
+
+    @Override
     public String addRecipe(RecipeDto recipeDto) {
+        Long userId = authenticationService.getCurrentUserId();
+
+        if (userId == null) {
+            return "User not logged in";
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Recipe recipe = recipeMapper.mapToEntity(recipeDto);
         List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 
+        recipe.setUser(user);
         for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
             Ingredient existingIngredient = ingredientRepository
                     .findByIngredientNameAndMeasurement(ingredientDto.getIngredientName(), ingredientDto.getMeasurement());
@@ -166,5 +197,32 @@ public class RecipeServiceImpl implements RecipeService {
         recipeRepository.save(updatedRecipe);
 
         return "Recipe is modified";
+    }
+
+    @Override
+    public String addLike(long id) {
+        Long userID = authenticationService.getCurrentUserId();
+
+        if (userID == null) {
+            return "User not logged in";
+        }
+
+        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
+        if(foundRecipe.isEmpty()){
+            return "Recipe not found";
+        }
+
+        Recipe recipe = foundRecipe.get();
+
+        boolean isAlreadyLiked = recipe.getLikedby().stream().anyMatch(user -> user.getId().equals(userID));
+        if (isAlreadyLiked) {
+            return "User already liked this recipe";
+        }
+
+        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        recipe.getLikedby().add(user);
+
+        return "Recipe liked successfully";
     }
 }
