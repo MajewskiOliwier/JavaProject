@@ -126,7 +126,6 @@
 				</configuration>
 			</plugin>
 
-
 		</plugins>
 	</build>
 	<repositories>
