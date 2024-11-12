@@ -112,8 +112,6 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
-
-
     @Override
     public boolean isTokenExpired(String token) {
         Claims claims = Jwts.parser().setSigningKey(getSignKey()).parseClaimsJws(token).getBody();
