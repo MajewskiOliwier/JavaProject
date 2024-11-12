@@ -2,6 +2,7 @@ package com.example.JavaProject.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,12 @@ public class RegisterDto {
     @Size(min = 1,max = 40, message = "Username length must be in range <1,40>")
     private String username;
 
+    @NotBlank
+    @Size(min = 1, max = 120)
+    private int age;
+
+    @NotBlank
+    private boolean isMan;
 
     @NotBlank
     @Email(message = "email must contain character @")
@@ -27,4 +34,11 @@ public class RegisterDto {
     @NotBlank
     private String password;
 
+    public Boolean getIsMan() {
+        return isMan;
+    }
+
+    public void setIsMan(Boolean isMan) {
+        this.isMan = isMan;
+    }
 }

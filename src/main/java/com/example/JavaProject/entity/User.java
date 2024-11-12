@@ -2,10 +2,7 @@ package com.example.JavaProject.entity;
 
 import com.example.JavaProject.entity.Role;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -38,6 +35,10 @@ public class User implements UserDetails {
     @Max(120)
     private Integer age;
 
+    @NotNull
+    private boolean isMan;
+
+    @NotNull
     @Email
     private String email;
 
@@ -55,12 +56,8 @@ public class User implements UserDetails {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-
-
     @OneToMany(mappedBy = "user")
     private List<Recipe> recipes;
-
-
 
     @ManyToMany
     @JoinTable(name = "user_recipe",
