@@ -28,19 +28,19 @@ public class User implements UserDetails {
     @Column(length = 50)
     private String userName;
 
-    @Min(1)
-    @Max(120)
+    @Min(6)
+    @Max(99)
     private Integer age;
 
     @NotNull
     private boolean isMan;
 
-    @NotNull
-    @Email
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @Min(8)
-    @NotNull
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
     @ManyToOne
@@ -61,8 +61,8 @@ public class User implements UserDetails {
 
     @ManyToMany
     @JoinTable(name = "recipe_likes",
-                joinColumns = @JoinColumn(name = "user_id"),
-                inverseJoinColumns = @JoinColumn(name = "recipe_id")
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
     private List<Recipe> likes;
 
@@ -72,7 +72,6 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
     private List<Recipe> favourites;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
@@ -90,7 +89,7 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
-    } //is used by UserDetails in validation
+    }
 
     public String getNormalUsername() {
         return userName;

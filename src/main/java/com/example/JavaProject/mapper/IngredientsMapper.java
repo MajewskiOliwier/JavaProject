@@ -5,6 +5,7 @@ import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.entity.Ingredient;
 import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.entity.RecipeIngredient;
+import com.example.JavaProject.response.IngredientResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -29,5 +30,14 @@ public class IngredientsMapper {
         ingredientDto.setQuantity(recipeIngredient.getQuantity());
 
         return ingredientDto;
+    }
+
+    public IngredientResponse  mapToResponse(Ingredient ingredient){
+        IngredientResponse ingredientResponse = new IngredientResponse();
+
+        ingredientResponse.setMeasurement(ingredient.getMeasurement());
+        ingredientResponse.setIngredientName(ingredient.getIngredientName());
+
+        return ingredientResponse;
     }
 }
