@@ -54,8 +54,24 @@ public class RecipeController {
         @PutMapping("/recipes/{id}/likes")
         @PreAuthorize("isAuthenticated()")
         public ResponseEntity<String> addRecipeLike(@PathVariable long id){
-            System.out.println("User ID from AuthenticationService: " + authenticationService.getCurrentUserId());
             return new ResponseEntity<>(recipeService.addLike(id), HttpStatus.OK);
         }
 
+        @PutMapping("/recipes/{id}/favourite")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id){
+            return new ResponseEntity<>(recipeService.addToFavourite(id), HttpStatus.OK);
+        }
+
+        @GetMapping("/recipes/favourites")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<List<RecipeResponse>> getFavouriteRecipes(){
+            return new ResponseEntity<>(recipeService.getFavouriteRecipes(), HttpStatus.OK);
+        }
+
+        @DeleteMapping("/recipes/{id}/favourite")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id){
+            return new ResponseEntity<>(recipeService.deleteFavouriteRecipe(id), HttpStatus.OK);
+        }
 }

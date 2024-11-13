@@ -253,4 +253,99 @@ public class RecipeServiceImpl implements RecipeService {
         recipeRepository.save(recipe);
         return "Recipe liked successfully ";
     }
+
+    @Transactional
+    @Override
+    public String addToFavourite(long id) {
+        Long userID = authenticationService.getCurrentUserId();
+
+        if (userID == null) {
+            return "User not logged in";
+        }
+
+        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
+        if(foundRecipe.isEmpty()){
+            return "Recipe not found";
+        }
+
+        Recipe recipe = foundRecipe.get();
+
+        boolean isUserDeleted = recipe.getUser().isHidden();
+        if(isUserDeleted){
+            return "User has been deleted";
+        }
+
+        boolean isAlreadyFavoured = recipe.getFavouritedBy().stream().anyMatch(user -> user.getId().equals(userID));
+        if (isAlreadyFavoured) {
+            return "User has already added this recipe to favourite";
+        }
+
+        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        recipe.getFavouritedBy().add(user);
+        recipeRepository.save(recipe);
+        return "Recipe added to favourite successfully ";
+    }
+
+    @Override
+    public List<RecipeResponse> getFavouriteRecipes() {
+        Long userID = authenticationService.getCurrentUserId();
+        Optional<User> updatedUser = userRepository.findById(userID);
+        if (updatedUser.isEmpty()) {
+            throw new RuntimeException("No user found with currently logged account.");
+        }
+
+        User user = updatedUser.get();
+
+        if(user.isHidden()){
+            throw new ProfileHiddenException("Profile has been deleted");
+        }
+
+        List<RecipeResponse> recipeResponses = new ArrayList<>();
+        for (Recipe recipe : user.getFavourites()) {
+            if (recipe.getUser().isHidden()) {
+                continue;
+            }
+
+            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
+            RecipeResponse recipeResponse = new RecipeResponse();
+
+            List<IngredientDto> ingredientDtos = new ArrayList<>();
+            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
+                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
+            }
+
+            recipeResponse.setIngredients(ingredientDtos);
+            recipeResponse.setRecipeName(recipeDto.getRecipeName());
+            recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
+            recipeResponse.setDifficulty(recipeDto.getDifficulty());
+            recipeResponse.setAuthor(recipeDto.getAuthor());
+            recipeResponse.setLikes(recipeDto.getLikes());
+            recipeResponses.add(recipeResponse);
+        }
+
+        return recipeResponses;
+    }
+
+    @Override
+    public String deleteFavouriteRecipe(Long id) {
+        Long userID = authenticationService.getCurrentUserId();
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
+
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+
+        if (!user.getFavourites().contains(recipe)) {
+            return "Recipe is not in favourites.";
+        }
+
+        user.getFavourites().remove(recipe);
+
+        userRepository.save(user);
+
+        return "Favourite recipe removed sucessfully";
+    }
+
+
 }

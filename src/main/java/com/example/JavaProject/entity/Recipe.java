@@ -58,6 +58,14 @@ public class Recipe {
     )
     private List<User> likedby;
 
+    @ManyToMany
+    @JoinTable(
+            name = "recipe_favourites",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> favouritedBy;
+
     @OneToMany(mappedBy = "recipe")
     private List<RecipeIngredient> recipeIngredients;
 
