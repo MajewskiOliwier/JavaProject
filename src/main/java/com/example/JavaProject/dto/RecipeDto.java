@@ -21,9 +21,16 @@ import java.util.List;
 @NoArgsConstructor
 public class RecipeDto {
     private String recipeName;
+
     private int preparationTime;
+
+    @Min(1)
+    @Max(5)
     private int difficulty;
+
     private List<IngredientDto> ingredients;
+
     private String author;
+
     private int likes;
 }

@@ -60,7 +60,7 @@ public class User implements UserDetails {
     private List<Recipe> recipes;
 
     @ManyToMany
-    @JoinTable(name = "user_recipe",
+    @JoinTable(name = "recipe_likes",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
