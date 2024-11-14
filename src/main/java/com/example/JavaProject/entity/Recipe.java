@@ -2,24 +2,19 @@ package com.example.JavaProject.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.example.JavaProject.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "recipe")
+@Table(name = "recipes")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Recipe {
 
@@ -27,7 +22,6 @@ public class Recipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(length = 50)
     private String recipeName;
 
@@ -38,12 +32,9 @@ public class Recipe {
     private LocalDateTime updatedAt;
 
     @Column(name = "preparationTime")
-    @Min(1)
-    @NotNull
     private int preparationTime;
 
-    @Min(1)
-    @Max(5)
+
     private int difficulty;
 
     @ManyToOne

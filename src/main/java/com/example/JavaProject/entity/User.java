@@ -1,7 +1,6 @@
 package com.example.JavaProject.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class User implements UserDetails {
@@ -28,19 +27,12 @@ public class User implements UserDetails {
     @Column(length = 50)
     private String userName;
 
-    @Min(1)
-    @Max(120)
     private Integer age;
 
-    @NotNull
     private boolean isMan;
 
-    @NotNull
-    @Email
     private String email;
 
-    @Min(8)
-    @NotNull
     private String password;
 
     @ManyToOne
@@ -60,14 +52,14 @@ public class User implements UserDetails {
     private List<Recipe> recipes;
 
     @ManyToMany
-    @JoinTable(name = "recipe_likes",
+    @JoinTable(name = "recipes_likes",
                 joinColumns = @JoinColumn(name = "user_id"),
                 inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
     private List<Recipe> likes;
 
     @ManyToMany
-    @JoinTable(name = "recipe_favourites",
+    @JoinTable(name = "recipes_favourites",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "recipe_id")
     )
@@ -79,13 +71,8 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(role.getName()));
     }
 
-    public Role getRole() {
-        return role;
-    }
 
-    public boolean getIsMan(){
-        return isMan;
-    }
+    public boolean getIsMan(){return isMan;}
 
     @Override
     public String getUsername() {
