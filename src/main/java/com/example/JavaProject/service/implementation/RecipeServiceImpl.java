@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -48,24 +49,18 @@ public class RecipeServiceImpl implements RecipeService {
 
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
-            if (recipe.getUser().isHidden()) {
+            if (isHidden(recipe)) {
                 continue;
             }
 
             RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-            RecipeResponse recipeResponse = new RecipeResponse();
 
             List<IngredientDto> ingredientDtos = new ArrayList<>();
             for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
                 ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
             }
 
-            recipeResponse.setIngredients(ingredientDtos);
-            recipeResponse.setRecipeName(recipeDto.getRecipeName());
-            recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
-            recipeResponse.setDifficulty(recipeDto.getDifficulty());
-            recipeResponse.setAuthor(recipeDto.getAuthor());
-            recipeResponse.setLikes(recipeResponse.getLikes());
+            RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
             recipeResponses.add(recipeResponse);
         }
 
@@ -83,23 +78,24 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         Recipe foundRecipe = recipe.get();
-        if (foundRecipe.getUser().isHidden()) {
+        if (isHidden(foundRecipe)) {
             throw new ProfileHiddenException("Profile has been deleted");
         }
 
         RecipeDto recipeDto = recipeMapper.mapToDto(foundRecipe);
-
-
         List<IngredientDto> ingredientDtos = recipeDto.getIngredients();
 
+        return getRecipeResponse(recipeDto, ingredientDtos);
+    }
 
+    private static RecipeResponse getRecipeResponse(RecipeDto recipeDto, List<IngredientDto> ingredientDtos) {
         RecipeResponse recipeResponse = new RecipeResponse();
         recipeResponse.setRecipeName(recipeDto.getRecipeName());
+        recipeResponse.setDifficulty(recipeDto.getDifficulty());
         recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
         recipeResponse.setAuthor(recipeDto.getAuthor());
         recipeResponse.setLikes(recipeDto.getLikes());
         recipeResponse.setIngredients(ingredientDtos);
-
         return recipeResponse;
     }
 
@@ -112,7 +108,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         Recipe foundRecipe = recipe.get();
-        if(foundRecipe.getUser().isHidden()){
+        if(isHidden(foundRecipe)){
             throw new ProfileHiddenException("Profile has been deleted");
         }
 
@@ -170,61 +166,76 @@ public class RecipeServiceImpl implements RecipeService {
     @Transactional
     @Override
     public String modifyRecipe(long id, RecipeDto recipeDto) {
-        Optional<Recipe> recipe = recipeRepository.findById(id);
+        Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("ID not found"));
 
-        if (recipe.isEmpty()) {
-            return "Recipe with given id doesn't exist";
+        if(!isOwner(updatedRecipe)){
+            return "User can only modify their recipe";
         }
 
-        Recipe updatedRecipe = recipe.get();
-
-        if(updatedRecipe.getUser().isHidden()){
+        if(isHidden(updatedRecipe)){
             return "User is banned";
         }
 
+
+        UpdateRecipeData(recipeDto, updatedRecipe);
+
+        List<RecipeIngredient> existingIngredients = new ArrayList<>(updatedRecipe.getRecipeIngredients());
+
+        RemoveOldIngredients(recipeDto, existingIngredients);
+        AddNewIngredients(recipeDto, updatedRecipe);
+
+        return "Recipe is modified";
+    }
+
+    private boolean isOwner(Recipe updatedRecipe) {
+        return Objects.equals(updatedRecipe.getUser().getId(), authenticationService.getCurrentUserId());
+    }
+
+    private static boolean isHidden(Recipe updatedRecipe) {
+        return updatedRecipe.getUser().isHidden();
+    }
+
+    private static void UpdateRecipeData(RecipeDto recipeDto, Recipe updatedRecipe) {
         updatedRecipe.setRecipeName(recipeDto.getRecipeName());
         updatedRecipe.setDifficulty(recipeDto.getDifficulty());
         updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
+    }
 
-        List<RecipeIngredient> recipeIngredients = new ArrayList<>();
-        for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
-            Ingredient ingredient = ingredientRepository.findByIngredientNameAndMeasurement(ingredientDto.getIngredientName(), ingredientDto.getMeasurement());
+    private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
+        for(IngredientDto ingredientDto : recipeDto.getIngredients()){
+            Ingredient ingredient = new Ingredient();
+            ingredient.setIngredientName(ingredientDto.getIngredientName());
+            ingredient.setMeasurement(ingredientDto.getMeasurement());
+            ingredient.setIngredientsRecipe(new ArrayList<>());
 
-            if (ingredient == null) {
-                ingredient = ingredientRepository.save(ingredientsMapper.mapToEntity(ingredientDto));
-            }
+            RecipeIngredient recipeIngredient = new RecipeIngredient();
+            recipeIngredient.setQuantity(ingredientDto.getQuantity());
+            recipeIngredient.setIngredient(ingredient);
+            recipeIngredient.setRecipe(updatedRecipe);
 
-            if (ingredient == null) {
-                return "Ingredient could not be saved";
-            }
+            ingredient.getIngredientsRecipe().add(recipeIngredient);
 
-            Ingredient finalIngredient = ingredient;
-            Optional<RecipeIngredient> existingRecipeIngredient = updatedRecipe.getRecipeIngredients()
+            ingredientRepository.save(ingredient);
+            recipeIngredientRepository.save(recipeIngredient);
+        }
+    }
+
+    private void RemoveOldIngredients(RecipeDto recipeDto, List<RecipeIngredient> existingIngredients) {
+        for(RecipeIngredient recipeIngredient : existingIngredients){
+            boolean unchangedIngredient =  recipeDto.getIngredients()
                     .stream()
-                    .filter(ri -> ri.getIngredient().equals(finalIngredient))
-                    .findFirst();
+                    .anyMatch(ingredientDto -> (ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName())
+                    && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
 
-            if (existingRecipeIngredient.isPresent()) {
-                RecipeIngredient recipeIngredient = existingRecipeIngredient.get();
-                recipeIngredient.setQuantity(ingredientDto.getQuantity());
-                recipeIngredients.add(recipeIngredient);
-            } else {
-                RecipeIngredient newRecipeIngredient = new RecipeIngredient();
-                newRecipeIngredient.setRecipe(updatedRecipe);
-                newRecipeIngredient.setIngredient(ingredient);
-                newRecipeIngredient.setQuantity(ingredientDto.getQuantity());
-                recipeIngredients.add(newRecipeIngredient);
+            if(!unchangedIngredient){
+                recipeIngredient.getRecipe().getRecipeIngredients().remove(recipeIngredient);
+                recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
+                recipeIngredient.setRecipe(null);
+                recipeIngredient.setIngredient(null);
+
+                recipeIngredientRepository.delete(recipeIngredient);
             }
         }
-
-        updatedRecipe.setRecipeIngredients(recipeIngredients);
-
-        recipeIngredientRepository.saveAll(recipeIngredients);
-
-        entityManager.flush();
-        recipeRepository.save(updatedRecipe);
-
-        return "Recipe is modified";
     }
 
     @Override
