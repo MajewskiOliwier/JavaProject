@@ -358,5 +358,29 @@ public class RecipeServiceImpl implements RecipeService {
         return "Favourite recipe removed sucessfully";
     }
 
+    @Override
+    public List<RecipeResponse> findRecipesByIngredient(String ingredientName) {
+        List<Recipe> recipes = recipeRepository.findRecipesByIngredientName(ingredientName);
+
+        List<RecipeResponse> recipeResponses = new ArrayList<>();
+        for (Recipe recipe : recipes) {
+            if (isHidden(recipe)) {
+                continue;
+            }
+
+            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
+
+            List<IngredientDto> ingredientDtos = new ArrayList<>();
+            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
+                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
+            }
+
+            RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
+            recipeResponses.add(recipeResponse);
+        }
+
+        return recipeResponses;
+    }
+
 
 }
