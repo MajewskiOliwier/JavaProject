@@ -1,27 +1,26 @@
 package com.example.JavaProject.dto;
 
-import com.example.JavaProject.entity.Ingredient;
-import com.example.JavaProject.entity.User;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class RecipeDto {
+    @NotNull
+    @Size(min=1, max = 50, message = "Recipe name length must be in range <1,50>")
     private String recipeName;
 
+    @Min(1)
+    @NotNull
     private int preparationTime;
 
     @Min(1)
