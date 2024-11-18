@@ -27,7 +27,6 @@ public class User implements UserDetails {
 
     @Column(length = 50)
     private String userName;
-
     @Min(6)
     @Max(99)
     private Integer age;
