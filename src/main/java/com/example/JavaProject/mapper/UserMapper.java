@@ -21,7 +21,6 @@ public class UserMapper {
                 .password(registerDto.getPassword())
                 .build();
     }
-
     public RegisterDto mapToDto(User user){
         return new RegisterDto(
                 user.getNormalUsername(),
