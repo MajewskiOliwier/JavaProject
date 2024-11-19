@@ -1,6 +1,9 @@
 package com.example.JavaProject.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,31 +15,24 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RegisterDto {
 
-    @NotBlank
-    @Size(min = 1,max = 40, message = "Username length must be in range <1,40>")
+
+    @NotBlank(message = "Username cannot be empty")
+    @Size(min = 1, max = 50, message = "Username length must be between 1 and 50 characters")
     private String username;
 
-    @NotBlank
-    @Min(1)
-    @Max(120)
-    private int age;
+    @NotNull(message = "Age must be provided")
+    @Min(value = 6, message = "Age must be at least 6")
+    @Max(value = 99, message = "Age cannot be greater than 99")
+    private Integer age;
 
-    @NotBlank
-    private boolean isMan;
+    @NotNull(message = "Gender must be specified")
+    private Boolean isMan;
 
-    @NotBlank
-    @Email(message = "email must contain character @")
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank
-    @Min(8)
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
-
-    public Boolean getIsMan() {
-        return isMan;
-    }
-
-    public void setIsMan(Boolean isMan) {
-        this.isMan = isMan;
-    }
 }

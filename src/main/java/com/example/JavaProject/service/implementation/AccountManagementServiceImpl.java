@@ -25,6 +25,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper; // Inject UserMapper here
 
+
     @Override
     public String promote(long id) {
         Optional<User> foundUser = userRepository.findById(id);
@@ -102,4 +103,10 @@ public class AccountManagementServiceImpl implements AccountManagementService {
 
         return "User has been successfully deleted";
     }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }

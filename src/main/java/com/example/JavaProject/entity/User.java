@@ -1,6 +1,7 @@
 package com.example.JavaProject.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class User implements UserDetails {
@@ -27,12 +28,19 @@ public class User implements UserDetails {
     @Column(length = 50)
     private String userName;
 
+    @Min(6)
+    @Max(99)
     private Integer age;
 
+    @NotNull
     private boolean isMan;
 
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     private String email;
 
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
     @ManyToOne
@@ -65,19 +73,23 @@ public class User implements UserDetails {
     )
     private List<Recipe> favourites;
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role.getName()));
     }
 
+    public Role getRole() {
+        return role;
+    }
 
-    public boolean getIsMan(){return isMan;}
+    public boolean getIsMan(){
+        return isMan;
+    }
 
     @Override
     public String getUsername() {
         return email;
-    } //is used by UserDetails in validation
+    }
 
     public String getNormalUsername() {
         return userName;

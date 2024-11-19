@@ -74,4 +74,6 @@ public class RecipeController {
         public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id){
             return new ResponseEntity<>(recipeService.deleteFavouriteRecipe(id), HttpStatus.OK);
         }
+
+
 }

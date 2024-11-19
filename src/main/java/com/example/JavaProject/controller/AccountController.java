@@ -1,6 +1,8 @@
 package com.example.JavaProject.controller;
 
 import com.example.JavaProject.dto.RegisterDto;
+import com.example.JavaProject.entity.User;
+import com.example.JavaProject.exception.ProfileHiddenException;
 import com.example.JavaProject.service.interfaces.AccountManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,5 +34,17 @@ public class AccountController {
     public ResponseEntity<String> deleteAccount(){ //make fancy delete == hide
 
         return new ResponseEntity<>(accountManagementService.deleteAccount(), HttpStatus.OK);
+    }
+    @GetMapping("/email/{email}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<String> getAccountDetailsByEmail(@PathVariable String email) {
+        User user = accountManagementService.getUserByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isHidden()) {
+            throw new ProfileHiddenException("Profile is hidden");
+        }
+
+        return ResponseEntity.ok("User profile is visible");
     }
 }
