@@ -103,7 +103,6 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    @Disabled
     public void whenInvalidEmail_thenUserNotFound() throws Exception {
         var login = new LoginDto("email", 20, "password");
 
@@ -120,7 +119,6 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    @Disabled
     public void whenInvalidPassword_thenInvalidPasswordMessage() throws Exception {
         var login = new LoginDto("email", 20, "password");
         var user = User.builder()
