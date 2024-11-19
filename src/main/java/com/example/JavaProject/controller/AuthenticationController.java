@@ -4,6 +4,7 @@ import com.example.JavaProject.dto.LoginDto;
 import com.example.JavaProject.dto.RegisterDto;
 import com.example.JavaProject.response.AuthenticationResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto){
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterDto registerDto) {
         return new ResponseEntity<>(authenticationService.register(registerDto), HttpStatus.OK);
     }
 }

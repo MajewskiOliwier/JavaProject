@@ -74,9 +74,4 @@ public class RecipeController {
         public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id){
             return new ResponseEntity<>(recipeService.deleteFavouriteRecipe(id), HttpStatus.OK);
         }
-        @GetMapping("/recipes/search")
-        public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
-        List<RecipeResponse> recipes = recipeService.findRecipesByIngredient(ingredientName);
-            return new ResponseEntity<>(recipes, HttpStatus.OK);
-    }
 }
