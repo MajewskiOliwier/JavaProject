@@ -25,4 +25,6 @@ public interface RecipeService {
     List<RecipeResponse> getFavouriteRecipes();
 
     String deleteFavouriteRecipe(Long id);
+
+    List<RecipeResponse> findRecipesByIngredient(String ingredientName);
 }

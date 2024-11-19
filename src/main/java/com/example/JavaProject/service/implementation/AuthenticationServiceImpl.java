@@ -32,16 +32,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String register(RegisterDto registerDto) {
-        if(userRepository.existsByEmail(registerDto.getEmail())){
-            throw new RuntimeException(registerDto.getEmail()+" Email is taken");
+        if (userRepository.existsByEmail(registerDto.getEmail())) {
+            throw new RuntimeException(registerDto.getEmail() + " Email is taken");
         }
 
         Role userRole = roleRepository.findByName("ROLE_USER");
-        if(userRole == null){
+        if (userRole == null) {
             userRole = new Role();
             userRole.setName("ROLE_USER");
             roleRepository.save(userRole);
-
             Role adminRole = new Role();
             adminRole.setName("ROLE_ADMIN");
             roleRepository.save(adminRole);
@@ -55,7 +54,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .isMan(registerDto.getIsMan())
                 .role(userRole)
                 .build();
-
         userRepository.save(user);
         return "USER REGISTRATION SUCCESSFUL";
     }
@@ -65,7 +63,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             User newUser = userRepository.findByEmail(loginDto.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-
             if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword())) {
                 throw new RuntimeException("Invalid password");
             }
@@ -74,7 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String token = jwtServiceImpl.generateToken(newUser);
 
             return new AuthenticationResponse(token, newUser.getRole().getName());
-        }catch (AuthenticationException e) {
+        } catch (AuthenticationException e) {
             return new AuthenticationResponse(null, null);
 
         }
@@ -85,13 +82,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Principal: " + principal);
 
-        // try to refactor the instanceOf
         if (principal instanceof UserDetails userDetails) {
             String email = userDetails.getUsername();
             return userRepository.findByEmail(email)
                     .map(User::getId)
                     .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
         }
-
-        throw new UserNotFoundException("User is not authenticated");}
+        throw new UserNotFoundException("User is not authenticated");
+    }
 }
