@@ -20,7 +20,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @AllArgsConstructor
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -35,7 +34,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new RuntimeException(registerDto.getEmail() + " Email is taken");
         }
-
         Role userRole = roleRepository.findByName("ROLE_USER");
         if (userRole == null) {
             userRole = new Role();
@@ -45,7 +43,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             adminRole.setName("ROLE_ADMIN");
             roleRepository.save(adminRole);
         }
-
         var user = User.builder()
                 .userName(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
@@ -63,13 +60,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             User newUser = userRepository.findByEmail(loginDto.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+
             if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword())) {
                 throw new RuntimeException("Invalid password");
             }
-
-
             String token = jwtServiceImpl.generateToken(newUser);
-
             return new AuthenticationResponse(token, newUser.getRole().getName());
         } catch (AuthenticationException e) {
             return new AuthenticationResponse(null, null);
@@ -81,7 +76,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public Long getCurrentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Principal: " + principal);
-
         if (principal instanceof UserDetails userDetails) {
             String email = userDetails.getUsername();
             return userRepository.findByEmail(email)

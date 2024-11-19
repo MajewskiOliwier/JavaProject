@@ -17,6 +17,7 @@ import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
+import com.example.JavaProject.service.interfaces.NotificationService;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,8 @@ public class RecipeServiceImpl implements RecipeService {
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
     private EntityManager entityManager;
+    private final NotificationService notificationService;
+
 
     private AuthenticationService authenticationService;
 
@@ -295,7 +298,11 @@ public class RecipeServiceImpl implements RecipeService {
 
         recipe.getFavouritedBy().add(user);
         recipeRepository.save(recipe);
-        return "Recipe added to favourite successfully ";
+
+        String message = "User " + user.getNormalUsername() + " added recipe '" + recipe.getRecipeName() + "' to favourites.";
+            notificationService.sendNotification(message);
+
+        return "Recipe added to favourite successfully";
     }
 
     @Override
@@ -352,10 +359,12 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         user.getFavourites().remove(recipe);
-
         userRepository.save(user);
 
-        return "Favourite recipe removed sucessfully";
+        String message = "User " + user.getNormalUsername() + " removed recipe '" + recipe.getRecipeName() + "' from favourites.";
+        notificationService.sendNotification(message);
+
+        return "Favourite recipe removed successfully";
     }
 
     @Override
