@@ -17,7 +17,6 @@ import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
-import com.example.JavaProject.service.interfaces.NotificationService;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -40,7 +39,6 @@ public class RecipeServiceImpl implements RecipeService {
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
     private EntityManager entityManager;
-    private final NotificationService notificationService;
 
 
     private AuthenticationService authenticationService;
@@ -278,31 +276,29 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         Optional<Recipe> foundRecipe = recipeRepository.findById(id);
-        if(foundRecipe.isEmpty()){
+        if (foundRecipe.isEmpty()) {
             return "Recipe not found";
         }
 
         Recipe recipe = foundRecipe.get();
 
         boolean isUserDeleted = recipe.getUser().isHidden();
-        if(isUserDeleted){
+        if (isUserDeleted) {
             return "User has been deleted";
         }
 
-        boolean isAlreadyFavoured = recipe.getFavouritedBy().stream().anyMatch(user -> user.getId().equals(userID));
+        boolean isAlreadyFavoured = recipe.getFavouritedBy().stream()
+                .anyMatch(user -> user.getId().equals(userID));
         if (isAlreadyFavoured) {
             return "User has already added this recipe to favourite";
         }
 
-        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         recipe.getFavouritedBy().add(user);
         recipeRepository.save(recipe);
-
-        String message = "User " + user.getNormalUsername() + " added recipe '" + recipe.getRecipeName() + "' to favourites.";
-            notificationService.sendNotification(message);
-
-        return "Recipe added to favourite successfully";
+        return "Recipe added to favourites successfully ";
     }
 
     @Override
@@ -359,12 +355,10 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         user.getFavourites().remove(recipe);
+
         userRepository.save(user);
 
-        String message = "User " + user.getNormalUsername() + " removed recipe '" + recipe.getRecipeName() + "' from favourites.";
-        notificationService.sendNotification(message);
-
-        return "Favourite recipe removed successfully";
+        return "Recipe removed from favourites successfully";
     }
 
     @Override
@@ -390,6 +384,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         return recipeResponses;
     }
+
 
 
 }

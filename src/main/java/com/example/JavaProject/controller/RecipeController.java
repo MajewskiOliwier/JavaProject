@@ -59,8 +59,9 @@ public class RecipeController {
 
         @PutMapping("/recipes/{id}/favourite")
         @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id){
-            return new ResponseEntity<>(recipeService.addToFavourite(id), HttpStatus.OK);
+        public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id) {
+            String message = recipeService.addToFavourite(id);
+            return new ResponseEntity<>(message, HttpStatus.OK);
         }
 
         @GetMapping("/recipes/favourites")
@@ -71,7 +72,13 @@ public class RecipeController {
 
         @DeleteMapping("/recipes/{id}/favourite")
         @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id){
-            return new ResponseEntity<>(recipeService.deleteFavouriteRecipe(id), HttpStatus.OK);
+        public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id) {
+            String message = recipeService.deleteFavouriteRecipe(id);
+            return new ResponseEntity<>(message, HttpStatus.OK);
         }
+        @GetMapping("/recipes/search")
+        public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
+        List<RecipeResponse> recipes = recipeService.findRecipesByIngredient(ingredientName);
+        return new ResponseEntity<>(recipes, HttpStatus.OK);
+    }
 }
