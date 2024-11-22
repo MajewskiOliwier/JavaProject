@@ -16,4 +16,7 @@ public interface AccountManagementService {
     String deleteAccount();
 
     Optional<User> getUserByEmail(String email);
+
+    String hideAccount(long id);
+
 }
