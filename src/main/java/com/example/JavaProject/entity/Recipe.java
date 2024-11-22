@@ -38,14 +38,14 @@ public class Recipe {
     private int difficulty;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private User user;
 
     @ManyToMany
     @JoinTable(
             name = "recipe_likes",
             joinColumns = @JoinColumn(name = "recipe_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "users_id")
     )
     private List<User> likedby;
 
@@ -53,7 +53,7 @@ public class Recipe {
     @JoinTable(
             name = "recipe_favourites",
             joinColumns = @JoinColumn(name = "recipe_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "users_id")
     )
     private List<User> favouritedBy;
 

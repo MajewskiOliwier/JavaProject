@@ -56,7 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationResponse login(LoginDto loginDto) {
         try {
             User newUser = userRepository.findByEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword())) {
                 throw new RuntimeException("Invalid password");
