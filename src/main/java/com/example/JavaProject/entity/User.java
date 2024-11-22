@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class User implements UserDetails {
