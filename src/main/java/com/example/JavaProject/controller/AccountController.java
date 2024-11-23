@@ -47,4 +47,10 @@ public class AccountController {
 
         return ResponseEntity.ok("User profile is visible");
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/account/hide/{id}")
+    public ResponseEntity<String> hideAccount(@PathVariable long id) {
+        return new ResponseEntity<>(accountManagementService.hideAccount(id), HttpStatus.OK);
+    }
 }

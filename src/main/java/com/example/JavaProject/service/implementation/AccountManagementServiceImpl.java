@@ -109,4 +109,14 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         return userRepository.findByEmail(email);
     }
 
+    @Override
+    public String hideAccount(long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.isHidden()) {
+            return "User's account is already hidden.";
+        }
+        user.setHidden(true);
+        userRepository.save(user);
+        return "User account has been successfully hidden.";
+    }
 }

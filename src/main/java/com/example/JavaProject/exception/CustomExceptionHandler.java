@@ -29,7 +29,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ProfileHiddenException.class)
     public ResponseEntity<ErrorInfo> handleProfileHiddenException(ProfileHiddenException ex, HttpServletRequest request) {
-        ErrorInfo errorInfo = new ErrorInfo(request.getRequestURI(), "Profil użytkownika jest ukryty.");
+        ErrorInfo errorInfo = new ErrorInfo(request.getRequestURI(), "User profile is hidden.");
         return new ResponseEntity<>(errorInfo, HttpStatus.FORBIDDEN);
     }
 
