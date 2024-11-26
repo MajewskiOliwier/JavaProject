@@ -1,5 +1,7 @@
 package com.example.JavaProject.dto;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,13 +13,16 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JacksonXmlRootElement
+
 public class IngredientDto {
     @NotNull
+    @JacksonXmlProperty(localName = "ingredientName")
     private String ingredientName;
 
     @NotNull
     @Min(1)
-    private Float quantity;
+    @JacksonXmlProperty(localName = "quantity")    private Float quantity;
 
     @NotNull
     private String measurement;

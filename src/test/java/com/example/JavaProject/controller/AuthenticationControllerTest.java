@@ -1,10 +1,18 @@
 package com.example.JavaProject.controller;
 
 import com.example.JavaProject.dto.LoginDto;
+import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.dto.RegisterDto;
+import com.example.JavaProject.entity.Recipe;
+import com.example.JavaProject.entity.Role;
 import com.example.JavaProject.entity.User;
+import com.example.JavaProject.repository.RecipeRepository;
+import com.example.JavaProject.repository.RoleRepository;
 import com.example.JavaProject.repository.UserRepository;
+import com.example.JavaProject.service.interfaces.ImportExportService;
+import com.example.JavaProject.service.interfaces.RecipeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,10 +20,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.hibernate.validator.internal.util.Contracts.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +46,20 @@ public class AuthenticationControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ImportExportService importExportService;
+
+    @Autowired
+    private RecipeService recipeService;
+
+    @Autowired
+    private RecipeRepository recipeRepository;
+
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private XmlMapper xmlMapper;
 
     @Test
     public void whenValidInput_thenCreateUser() throws Exception {
@@ -112,3 +139,4 @@ public class AuthenticationControllerTest {
                 .andExpect(jsonPath("$.message", is("Invalid password")));
     }
 }
+

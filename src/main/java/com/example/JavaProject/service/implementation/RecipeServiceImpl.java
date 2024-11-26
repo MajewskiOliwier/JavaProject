@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @AllArgsConstructor
 @Service
@@ -44,9 +46,9 @@ public class RecipeServiceImpl implements RecipeService {
     private AuthenticationService authenticationService;
 
     @Override
-    public List<RecipeResponse> getAllRecipes(){
+    public List<RecipeResponse> getAllRecipes() {
         // find alternative for findAll?
-        List<Recipe> recipes= recipeRepository.findAll();
+        List<Recipe> recipes = recipeRepository.findAll();
 
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
@@ -69,12 +71,11 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
 
-
     @Override
-    public RecipeResponse getRecipe(long id){
+    public RecipeResponse getRecipe(long id) {
         Optional<Recipe> recipe = recipeRepository.findById(id);
 
-        if(recipe.isEmpty()) {
+        if (recipe.isEmpty()) {
 //           throw Exception("custome Exception");
         }
 
@@ -104,16 +105,16 @@ public class RecipeServiceImpl implements RecipeService {
     public LikesCountResponse getRecipeLikes(long id) {
         Optional<Recipe> recipe = recipeRepository.findById(id);
 
-        if(recipe.isEmpty()) {
+        if (recipe.isEmpty()) {
             throw new RuntimeException("Recipe doesn't exist");
         }
 
         Recipe foundRecipe = recipe.get();
-        if(isHidden(foundRecipe)){
+        if (isHidden(foundRecipe)) {
             throw new ProfileHiddenException("Profile has been deleted");
         }
 
-        int likesCount =  (int)foundRecipe.getLikedby().stream().count();
+        int likesCount = (int) foundRecipe.getLikedby().stream().count();
         return new LikesCountResponse(
                 likesCount
         );
@@ -162,18 +163,16 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
 
-
-
     @Transactional
     @Override
     public String modifyRecipe(long id, RecipeDto recipeDto) {
         Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("ID not found"));
 
-        if(!isOwner(updatedRecipe)){
+        if (!isOwner(updatedRecipe)) {
             return "User can only modify their recipe";
         }
 
-        if(isHidden(updatedRecipe)){
+        if (isHidden(updatedRecipe)) {
             return "User is banned";
         }
 
@@ -203,7 +202,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
-        for(IngredientDto ingredientDto : recipeDto.getIngredients()){
+        for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
             Ingredient ingredient = new Ingredient();
             ingredient.setIngredientName(ingredientDto.getIngredientName());
             ingredient.setMeasurement(ingredientDto.getMeasurement());
@@ -222,13 +221,13 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void RemoveOldIngredients(RecipeDto recipeDto, List<RecipeIngredient> existingIngredients) {
-        for(RecipeIngredient recipeIngredient : existingIngredients){
-            boolean unchangedIngredient =  recipeDto.getIngredients()
+        for (RecipeIngredient recipeIngredient : existingIngredients) {
+            boolean unchangedIngredient = recipeDto.getIngredients()
                     .stream()
                     .anyMatch(ingredientDto -> (ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName())
-                    && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
+                            && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
 
-            if(!unchangedIngredient){
+            if (!unchangedIngredient) {
                 recipeIngredient.getRecipe().getRecipeIngredients().remove(recipeIngredient);
                 recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
                 recipeIngredient.setRecipe(null);
@@ -248,7 +247,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         Optional<Recipe> foundRecipe = recipeRepository.findById(id);
-        if(foundRecipe.isEmpty()){
+        if (foundRecipe.isEmpty()) {
             return "Recipe not found";
         }
 
@@ -311,7 +310,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         User user = updatedUser.get();
 
-        if(user.isHidden()){
+        if (user.isHidden()) {
             throw new ProfileHiddenException("Profile has been deleted");
         }
 
@@ -385,6 +384,22 @@ public class RecipeServiceImpl implements RecipeService {
         return recipeResponses;
     }
 
+    public List<RecipeDto> getAllRecipeDtos() {
+        List<Recipe> recipes = recipeRepository.findAll();
+        System.out.println("Found " + recipes.size() + " recipes in the database");
+        List<RecipeDto> recipeDtos = recipes.stream()
+                .map(recipeMapper::mapToDto)
+                .collect(Collectors.toList());
+        return recipeDtos;
+    }
+
+    @Override
+    public void saveAll(List<RecipeDto> recipes) {
+        List<Recipe> recipeEntities = recipes.stream()
+                .map(recipeMapper::mapToEntity)
+                .collect(Collectors.toList());
+        recipeRepository.saveAll(recipeEntities);
+    }
 
 
 }
