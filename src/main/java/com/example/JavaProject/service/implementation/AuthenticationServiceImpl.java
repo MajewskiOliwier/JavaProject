@@ -10,12 +10,16 @@ import com.example.JavaProject.response.AuthenticationResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import lombok.AllArgsConstructor;
 import com.example.JavaProject.entity.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @AllArgsConstructor
 @Service
@@ -31,6 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new RuntimeException(registerDto.getEmail() + " Email is taken");
         }
+
         Role userRole = roleRepository.findByName("ROLE_USER");
         if (userRole == null) {
             userRole = new Role();
@@ -40,6 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             adminRole.setName("ROLE_ADMIN");
             roleRepository.save(adminRole);
         }
+
         var user = User.builder()
                 .userName(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
