@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/api/recipes/import/**").permitAll()  // Dodaj wyjątek dla importu
                         .anyRequest().authenticated()
                 );
 

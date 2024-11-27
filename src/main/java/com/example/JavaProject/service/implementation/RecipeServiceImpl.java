@@ -26,11 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 @Service
 public class RecipeServiceImpl implements RecipeService {
 
+    private final EmailServiceImpl emailServiceImpl;
     private RecipeRepository recipeRepository;
     private IngredientRepository ingredientRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
@@ -39,15 +43,14 @@ public class RecipeServiceImpl implements RecipeService {
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
     private EntityManager entityManager;
+    private static final Logger logger = LoggerFactory.getLogger(RecipeServiceImpl.class);
 
 
     private AuthenticationService authenticationService;
 
     @Override
-    public List<RecipeResponse> getAllRecipes(){
-        // find alternative for findAll?
-        List<Recipe> recipes= recipeRepository.findAll();
-
+    public List<RecipeResponse> getAllRecipes() {
+        List<Recipe> recipes = recipeRepository.findAll();
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (isHidden(recipe)) {
@@ -55,7 +58,6 @@ public class RecipeServiceImpl implements RecipeService {
             }
 
             RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-
             List<IngredientDto> ingredientDtos = new ArrayList<>();
             for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
                 ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
@@ -64,10 +66,8 @@ public class RecipeServiceImpl implements RecipeService {
             RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
             recipeResponses.add(recipeResponse);
         }
-
         return recipeResponses;
     }
-
 
 
     @Override
@@ -263,8 +263,51 @@ public class RecipeServiceImpl implements RecipeService {
 
         recipe.getLikedby().add(user);
         recipeRepository.save(recipe);
+
+        // Wyciągnij e-mail autora przepisu
+        String recipientEmail = recipe.getUser().getEmail();
+
+        // Logowanie e-maila
+        logger.info("Sending email to: " + recipientEmail);
+
+// Logowanie e-maila, na który jest wysyłany e-mail
+        System.out.println("Sending email to: " + recipientEmail);
+
+        // Wyślij e-mail do autora przepisu
+        emailServiceImpl.sendLikeNotification(recipe.getUser().getEmail());
         return "Recipe liked successfully ";
     }
+
+    public String removeLike(long id) {
+        Long userID = authenticationService.getCurrentUserId();
+
+        if (userID == null) {
+            return "User not logged in";
+        }
+
+        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
+        if (foundRecipe.isEmpty()) {
+            return "Recipe not found";
+        }
+
+        Recipe recipe = foundRecipe.get();
+
+        boolean isLiked = recipe.getLikedby().stream().anyMatch(user -> user.getId().equals(userID));
+        if (!isLiked) {
+            return "User has not liked this recipe";
+        }
+
+        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        // Usuwamy użytkownika z listy polubionych
+        recipe.getLikedby().remove(user);
+        recipeRepository.save(recipe);
+
+        return "Recipe unliked successfully";
+    }
+
+
+
 
     @Transactional
     @Override
@@ -383,6 +426,23 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         return recipeResponses;
+    }
+
+    public List<RecipeDto> getAllRecipeDtos() {
+        List<Recipe> recipes = recipeRepository.findAll();
+        System.out.println("Found " + recipes.size() + " recipes in the database");
+        List<RecipeDto> recipeDtos = recipes.stream()
+                .map(recipeMapper::mapToDto)
+                .collect(Collectors.toList());
+        return recipeDtos;
+    }
+
+    @Override
+    public void saveAll(List<RecipeDto> recipes) {
+        List<Recipe> recipeEntities = recipes.stream()
+                .map(recipeMapper::mapToEntity)
+                .collect(Collectors.toList());
+        recipeRepository.saveAll(recipeEntities);
     }
 
 

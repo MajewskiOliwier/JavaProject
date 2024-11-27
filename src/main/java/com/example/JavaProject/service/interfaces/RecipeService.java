@@ -20,6 +20,8 @@ public interface RecipeService {
 
     String addLike(long id);
 
+    String removeLike(long id);
+
     String addToFavourite(long id);
 
     List<RecipeResponse> getFavouriteRecipes();
@@ -28,6 +30,9 @@ public interface RecipeService {
 
     List<RecipeResponse> findRecipesByIngredient(String ingredientName);
 
+    void saveAll(List<RecipeDto> recipes);
+
+    List<RecipeDto> getAllRecipeDtos();
 
 
 }
