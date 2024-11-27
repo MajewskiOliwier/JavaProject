@@ -1,7 +1,7 @@
 package com.example.JavaProject.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,13 +12,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IngredientDto {
-    @NotNull
+
+    @JsonProperty("ingredientName")
+    @JacksonXmlProperty(localName = "ingredientName")
     private String ingredientName;
 
-    @NotNull
-    @Min(1)
-    private Float quantity;
+    @JsonProperty("quantity")
+    @JacksonXmlProperty(localName = "quantity")
+    private Double quantity;
 
-    @NotNull
-    private String measurement;
+    @JsonProperty("measurement")
+    @JacksonXmlProperty(localName = "measurement")
+    private String measurement;  // Dodane pole measurement
 }

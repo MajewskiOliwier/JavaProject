@@ -57,6 +57,12 @@ public class RecipeController {
             return new ResponseEntity<>(recipeService.addLike(id), HttpStatus.OK);
         }
 
+        @PutMapping("recipes/{id}/unlikes")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<String> removeRecipeLike(@PathVariable long id) {
+            return new ResponseEntity<>(recipeService.removeLike(id), HttpStatus.OK);
+        }
+
         @PutMapping("/recipes/{id}/favourite")
         @PreAuthorize("isAuthenticated()")
         public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id) {
