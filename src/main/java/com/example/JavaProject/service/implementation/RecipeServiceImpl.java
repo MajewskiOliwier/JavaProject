@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -44,10 +45,8 @@ public class RecipeServiceImpl implements RecipeService {
     private AuthenticationService authenticationService;
 
     @Override
-    public List<RecipeResponse> getAllRecipes(){
-        // find alternative for findAll?
-        List<Recipe> recipes= recipeRepository.findAll();
-
+    public List<RecipeResponse> getAllRecipes() {
+        List<Recipe> recipes = recipeRepository.findAll();
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (isHidden(recipe)) {
@@ -55,7 +54,6 @@ public class RecipeServiceImpl implements RecipeService {
             }
 
             RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-
             List<IngredientDto> ingredientDtos = new ArrayList<>();
             for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
                 ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
@@ -64,10 +62,8 @@ public class RecipeServiceImpl implements RecipeService {
             RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
             recipeResponses.add(recipeResponse);
         }
-
         return recipeResponses;
     }
-
 
 
     @Override
@@ -383,6 +379,23 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         return recipeResponses;
+    }
+
+    public List<RecipeDto> getAllRecipeDtos() {
+        List<Recipe> recipes = recipeRepository.findAll();
+        System.out.println("Found " + recipes.size() + " recipes in the database");
+        List<RecipeDto> recipeDtos = recipes.stream()
+                .map(recipeMapper::mapToDto)
+                .collect(Collectors.toList());
+        return recipeDtos;
+    }
+
+    @Override
+    public void saveAll(List<RecipeDto> recipes) {
+        List<Recipe> recipeEntities = recipes.stream()
+                .map(recipeMapper::mapToEntity)
+                .collect(Collectors.toList());
+        recipeRepository.saveAll(recipeEntities);
     }
 
 
