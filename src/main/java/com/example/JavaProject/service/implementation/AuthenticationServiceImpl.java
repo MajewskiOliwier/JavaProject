@@ -36,6 +36,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException(registerDto.getEmail() + " Email is taken");
         }
 
+        if (userRepository.existsByUserName(registerDto.getUsername())) {
+            throw new RuntimeException(registerDto.getUsername() + " UserName is taken");
+        }
+
         Role userRole = roleRepository.findByName("ROLE_USER");
         if (userRole == null) {
             userRole = new Role();
