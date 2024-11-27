@@ -5,7 +5,7 @@ import com.example.JavaProject.dto.RecipeDto;
 import java.io.IOException;
 import java.util.List;
 
-public interface ImportExportService {
+public interface ExportService {
     byte[] exportRecipesToJson(List<RecipeDto> recipes) throws IOException;
     byte[] exportRecipesToXml(List<RecipeDto> recipes) throws IOException;
 }
