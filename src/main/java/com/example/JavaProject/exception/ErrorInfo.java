@@ -1,14 +1,22 @@
 package com.example.JavaProject.exception;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-public final class ErrorInfo{
+@Schema(description = "Details about the error response")
+public final class ErrorInfo {
+
+    @Schema(description = "Error message")
     private final String message;
+
+    @Schema(description = "Timestamp of the error")
     private final String timestamp;
+
+    @Schema(description = "URL of the request")
     private final String url;
 
     public ErrorInfo(String url, Exception ex){
