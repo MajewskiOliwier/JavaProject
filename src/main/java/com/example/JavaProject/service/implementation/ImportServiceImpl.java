@@ -44,7 +44,6 @@ public class ImportServiceImpl implements ImportService {
     public List<RecipeDto> importRecipesFromJson(String json) throws IOException {
         List<RecipeDto> recipes = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, RecipeDto.class));
 
-        // Logowanie przed zapisaniem danych
         recipes.forEach(recipeDto -> log.info("Importuję przepis: {}", recipeDto.getRecipeName()));
 
         List<Recipe> savedRecipes = recipes.stream()
@@ -56,7 +55,6 @@ public class ImportServiceImpl implements ImportService {
                     recipe.setCreatedAt(LocalDateTime.now());
                     recipe.setUpdatedAt(LocalDateTime.now());
 
-                    // Zapisz składniki
                     List<RecipeIngredient> recipeIngredients = recipeDto.getIngredients().stream()
                             .map(ingredientDto -> {
                                 Ingredient ingredient = ingredientRepository.findByIngredientName(ingredientDto.getIngredientName())
@@ -82,7 +80,6 @@ public class ImportServiceImpl implements ImportService {
                 })
                 .collect(Collectors.toList());
 
-        // Logowanie po zapisaniu danych do bazy
         List<Recipe> savedRecipesList = recipeRepository.saveAll(savedRecipes);
         savedRecipesList.forEach(recipe -> log.info("Przepis zapisany: {}", recipe.getRecipeName()));
 
@@ -107,7 +104,6 @@ public class ImportServiceImpl implements ImportService {
                     recipe.setCreatedAt(LocalDateTime.now());
                     recipe.setUpdatedAt(LocalDateTime.now());
 
-                    // Zapisz składniki
                     List<RecipeIngredient> recipeIngredients = recipeDto.getIngredients().stream()
                             .map(ingredientDto -> {
                                 Ingredient ingredient = ingredientRepository.findByIngredientName(ingredientDto.getIngredientName())
@@ -133,7 +129,6 @@ public class ImportServiceImpl implements ImportService {
                 })
                 .collect(Collectors.toList());
 
-        // Logowanie po zapisaniu danych do bazy
         List<Recipe> savedRecipesList = recipeRepository.saveAll(savedRecipes);
         savedRecipesList.forEach(recipe -> log.info("Przepis zapisany: {}", recipe.getRecipeName()));
 
