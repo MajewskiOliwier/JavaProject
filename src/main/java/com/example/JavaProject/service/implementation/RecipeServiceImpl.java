@@ -158,7 +158,7 @@ public class RecipeServiceImpl implements RecipeService {
         return Objects.equals(updatedRecipe.getUser().getId(), authenticationService.getCurrentUserId());
     }
 
-    private static boolean isHidden(Recipe updatedRecipe) {
+    public static boolean isHidden(Recipe updatedRecipe) {
         return updatedRecipe.getUser().isHidden();
     }
 

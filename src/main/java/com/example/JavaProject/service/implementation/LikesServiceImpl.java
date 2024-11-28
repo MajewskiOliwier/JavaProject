@@ -12,11 +12,11 @@ import com.example.JavaProject.service.interfaces.LikesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.JavaProject.entity.Recipe;
 
 import java.util.Optional;
 
-import static java.nio.file.Files.isHidden;
+import static com.example.JavaProject.service.implementation.RecipeServiceImpl.isHidden;
+
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +39,6 @@ public class LikesServiceImpl implements LikesService {
         if (isHidden(foundRecipe)) {
             throw new ProfileHiddenException("Profile has been deleted");
         }
-
         int likesCount = foundRecipe.getLikedby().size();
         return new LikesCountResponse(likesCount);
     }
