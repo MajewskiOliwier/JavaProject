@@ -21,70 +21,79 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecipeController {
 
-        private final RecipeService recipeService;
-        private final AuthenticationService authenticationService;
+    private final RecipeService recipeService;
+    private final AuthenticationService authenticationService;
 
-        @GetMapping("/recipes")
-        public ResponseEntity<List<RecipeResponse>> getAllRecipe(){
-            return new ResponseEntity<>(recipeService.getAllRecipes(), HttpStatus.OK);
-        }
+    @GetMapping("/recipes")
+    public ResponseEntity<List<RecipeResponse>> getAllRecipe() {
+        return new ResponseEntity<>(recipeService.getAllRecipes(), HttpStatus.OK);
+    }
 
-        @GetMapping("/recipes/{id}")
-        public ResponseEntity<RecipeResponse> getAllRecipe(@PathVariable long id){
-            return new ResponseEntity<>(recipeService.getRecipe(id), HttpStatus.OK);
-        }
+    @GetMapping("/recipes/{id}")   //FIXME: ⬇️ nazwa
+    public ResponseEntity<RecipeResponse> getAllRecipe(@PathVariable long id) {
+        return new ResponseEntity<>(recipeService.getRecipe(id), HttpStatus.OK);
+    }
 
-        @GetMapping("/recipes/{id}/likes")
-        public ResponseEntity<LikesCountResponse> getRecipeLikeCount(@PathVariable long id){
-            return new ResponseEntity<>(recipeService.getRecipeLikes(id), HttpStatus.OK);
-        }
+    @PostMapping("/recipes")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> addRecipe(@RequestBody RecipeDto recipeDto) {
+        return new ResponseEntity<>(recipeService.addRecipe(recipeDto), HttpStatus.OK);
+    }
 
-        @PostMapping("/recipes")
-//        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> addRecipe(@RequestBody RecipeDto recipeDto){
-            return new ResponseEntity<>(recipeService.addRecipe(recipeDto), HttpStatus.OK);
-        }
+    @PutMapping("/recipes/{id}")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> modifyRecipe(@PathVariable long id, @RequestBody RecipeDto recipeDto) {
+        return new ResponseEntity<>(recipeService.modifyRecipe(id, recipeDto), HttpStatus.OK);
+    }
 
-        @PutMapping("/recipes/{id}")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> modifyRecipe(@PathVariable long id, @RequestBody RecipeDto recipeDto){
-            return new ResponseEntity<>(recipeService.modifyRecipe(id, recipeDto), HttpStatus.OK);
-        }
+    //TODO: brak usówania przepisu <-- dopytaj
 
-        @PutMapping("/recipes/{id}/likes")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> addRecipeLike(@PathVariable long id){
-            return new ResponseEntity<>(recipeService.addLike(id), HttpStatus.OK);
-        }
-
-        @PutMapping("recipes/{id}/unlikes")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> removeRecipeLike(@PathVariable long id) {
-            return new ResponseEntity<>(recipeService.removeLike(id), HttpStatus.OK);
-        }
-
-        @PutMapping("/recipes/{id}/favourite")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id) {
-            String message = recipeService.addToFavourite(id);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        }
-
-        @GetMapping("/recipes/favourites")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<List<RecipeResponse>> getFavouriteRecipes(){
-            return new ResponseEntity<>(recipeService.getFavouriteRecipes(), HttpStatus.OK);
-        }
-
-        @DeleteMapping("/recipes/{id}/favourite")
-        @PreAuthorize("isAuthenticated()")
-        public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id) {
-            String message = recipeService.deleteFavouriteRecipe(id);
-            return new ResponseEntity<>(message, HttpStatus.OK);
-        }
-        @GetMapping("/recipes/search")
-        public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
+    @GetMapping("/recipes/search")
+    public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
         List<RecipeResponse> recipes = recipeService.findRecipesByIngredient(ingredientName);
         return new ResponseEntity<>(recipes, HttpStatus.OK);
+    }
+
+
+
+    //FIXME: LIKES:
+    @GetMapping("/recipes/{id}/likes")      //TODO: skąd mam wiedzieć jakie id???
+    public ResponseEntity<LikesCountResponse> getRecipeLikeCount(@PathVariable long id) {
+        return new ResponseEntity<>(recipeService.getRecipeLikes(id), HttpStatus.OK);
+    }
+
+    @PutMapping("/recipes/{id}/likes")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> addRecipeLike(@PathVariable long id) {
+        return new ResponseEntity<>(recipeService.addLike(id), HttpStatus.OK);
+    }
+
+    @PutMapping("recipes/{id}/unlikes")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> removeRecipeLike(@PathVariable long id) {
+        return new ResponseEntity<>(recipeService.removeLike(id), HttpStatus.OK);
+    }
+
+
+    //FIXME: FAVOURITES:
+    //FIXME: liczba pojedyncza, czy mnoga? rozważ zmianę endpointów
+    @PutMapping("/recipes/{id}/favourite")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id) {
+        String message = recipeService.addToFavourite(id);
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
+
+    @GetMapping("/recipes/favourites")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<RecipeResponse>> getFavouriteRecipes() {
+        return new ResponseEntity<>(recipeService.getFavouriteRecipes(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/recipes/{id}/favourite")
+//    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id) {
+        String message = recipeService.deleteFavouriteRecipe(id);
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }

@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/recipes/import")
+@RequestMapping("/api/recipes/import")  //TODO: rozwarz zmianę endpointów
 @RequiredArgsConstructor
 public class ImportController {
 

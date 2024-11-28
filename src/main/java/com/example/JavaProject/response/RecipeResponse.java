@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RecipeResponse {
+public class RecipeResponse {   //FIXME: where ID???
     private String recipeName;
     private String author;
     private int preparationTime;

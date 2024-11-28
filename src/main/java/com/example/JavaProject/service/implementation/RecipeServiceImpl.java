@@ -33,17 +33,21 @@ import org.slf4j.LoggerFactory;
 @AllArgsConstructor
 @Service
 public class RecipeServiceImpl implements RecipeService {
-
+    //FIXME: powinien być interface!
     private final EmailServiceImpl emailServiceImpl;
+
     private RecipeRepository recipeRepository;
     private IngredientRepository ingredientRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
     private UserRepository userRepository;
 
+
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
-    private EntityManager entityManager;
-    private static final Logger logger = LoggerFactory.getLogger(RecipeServiceImpl.class);
+
+    //FIXME: nie powinny być używane
+//    private EntityManager entityManager;
+//    private static final Logger logger = LoggerFactory.getLogger(RecipeServiceImpl.class);
 
 
     private AuthenticationService authenticationService;
@@ -268,7 +272,7 @@ public class RecipeServiceImpl implements RecipeService {
         String recipientEmail = recipe.getUser().getEmail();
 
         // Logowanie e-maila
-        logger.info("Sending email to: " + recipientEmail);
+//        logger.info("Sending email to: " + recipientEmail);
 
 // Logowanie e-maila, na który jest wysyłany e-mail
         System.out.println("Sending email to: " + recipientEmail);
@@ -437,13 +441,13 @@ public class RecipeServiceImpl implements RecipeService {
         return recipeDtos;
     }
 
-    @Override
-    public void saveAll(List<RecipeDto> recipes) {
-        List<Recipe> recipeEntities = recipes.stream()
-                .map(recipeMapper::mapToEntity)
-                .collect(Collectors.toList());
-        recipeRepository.saveAll(recipeEntities);
-    }
+//    @Override
+//    public void saveAll(List<RecipeDto> recipes) {
+//        List<Recipe> recipeEntities = recipes.stream()
+//                .map(recipeMapper::mapToEntity)
+//                .collect(Collectors.toList());
+//        recipeRepository.saveAll(recipeEntities);
+//    }
 
 
 
