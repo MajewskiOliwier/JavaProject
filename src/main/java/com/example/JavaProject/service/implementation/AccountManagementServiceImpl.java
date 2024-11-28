@@ -23,7 +23,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     private final RoleRepository roleRepository;
     private AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper; // Inject UserMapper here
+    private final UserMapper userMapper;
 
 
     @Override

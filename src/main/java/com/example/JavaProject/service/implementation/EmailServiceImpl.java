@@ -16,8 +16,8 @@ public class EmailServiceImpl implements EmailService {
     public void sendLikeNotification(String toEmail) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("Ktoś polubił Twój przepis");
-        message.setText("Ktoś właśnie polubił Twój przepis. Sprawdź, kto to jest!");
+        message.setSubject("Someone liked your recipe");
+        message.setText("Someone just liked your recipe. Check who it is!");
 
         mailSender.send(message);
     }
