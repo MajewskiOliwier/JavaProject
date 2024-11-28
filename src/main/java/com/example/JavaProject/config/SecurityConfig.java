@@ -4,6 +4,7 @@ import com.example.JavaProject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,15 +42,22 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-//                                .anyRequest().permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs*/**").permitAll()
-                        .requestMatchers("/api/ingredients/**").permitAll()
-                        .requestMatchers("/api/account/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/account/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/**").permitAll()
+                        // swagger + emails
+                        .requestMatchers(HttpMethod.GET ,"/swagger-ui/**").permitAll()
+                        .requestMatchers(HttpMethod.GET ,"/v3/api-docs*/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/api/recipes/import/**").permitAll()  // Dodaj wyjątek dla importu
+
+                        // logged-in user options
+                        .requestMatchers(HttpMethod.GET ,"/api/recipes/favourites").authenticated()
+                        .requestMatchers(HttpMethod.POST ,"/api/recipes/import").authenticated()
+
+                        // public operations
+                        .requestMatchers(HttpMethod.POST ,"/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET ,"/api/ingredients/**").permitAll()
+                        .requestMatchers(HttpMethod.GET ,"/api/recipes/**").permitAll()
+
+                        // admin actions
+                        .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 
