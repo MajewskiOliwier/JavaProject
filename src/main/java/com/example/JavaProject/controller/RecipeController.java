@@ -12,33 +12,33 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/recipes")
 @RequiredArgsConstructor
 public class RecipeController {
 
     private final RecipeService recipeService;
 
-    @GetMapping("/recipes")
+    @GetMapping
     public ResponseEntity<List<RecipeResponse>> getAllRecipe() {
         return new ResponseEntity<>(recipeService.getAllRecipes(), HttpStatus.OK);
     }
 
-    @GetMapping("/recipes/{id}")   //FIXME: ⬇️ nazwa
+    @GetMapping("/{id}")
     public ResponseEntity<RecipeResponse> getAllRecipe(@PathVariable long id) {
         return new ResponseEntity<>(recipeService.getRecipe(id), HttpStatus.OK);
     }
 
-    @PostMapping("/recipes")
+    @PostMapping
     public ResponseEntity<String> addRecipe(@RequestBody RecipeDto recipeDto) {
         return new ResponseEntity<>(recipeService.addRecipe(recipeDto), HttpStatus.OK);
     }
 
-    @PutMapping("/recipes/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<String> modifyRecipe(@PathVariable long id, @RequestBody RecipeDto recipeDto) {
         return new ResponseEntity<>(recipeService.modifyRecipe(id, recipeDto), HttpStatus.OK);
     }
 
-    @GetMapping("/recipes/search")
+    @GetMapping("/search")
     public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
         List<RecipeResponse> recipes = recipeService.findRecipesByIngredient(ingredientName);
         return new ResponseEntity<>(recipes, HttpStatus.OK);

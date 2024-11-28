@@ -22,6 +22,11 @@ import java.util.stream.Collectors;
 public class RecipeDto {
 
 
+    @JsonProperty("id")
+    @JacksonXmlProperty(localName = "id")
+    @NotNull
+    private Long id;
+
     @JsonProperty("recipeName")
     @JacksonXmlProperty(localName = "recipeName")
     @NotNull
@@ -48,8 +53,8 @@ public class RecipeDto {
 
     private int likes;
 
-    // Konstruktor przyjmujący obiekt Recipe
     public RecipeDto(Recipe recipe) {
+        this.id = recipe.getId();
         this.recipeName = recipe.getRecipeName();
         this.preparationTime = recipe.getPreparationTime();
         this.difficulty = recipe.getDifficulty();

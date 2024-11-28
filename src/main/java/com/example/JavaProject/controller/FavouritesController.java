@@ -12,25 +12,25 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/recipes")
 @RequiredArgsConstructor
 public class FavouritesController {
 
     private final FavouritesService favouritesService;
 
-    @PutMapping("/recipes/{id}/favourites")
+    @PutMapping("/{id}/favourites")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> addRecipeToFavourite(@PathVariable long id) {
         String message = favouritesService.addToFavourite(id);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
-    @GetMapping("/recipes/favourites")
+    @GetMapping("/favourites")
     public ResponseEntity<List<RecipeResponse>> getFavouriteRecipes() {
         return new ResponseEntity<>(favouritesService.getFavouriteRecipes(), HttpStatus.OK);
     }
 
-    @DeleteMapping("/recipes/{id}/favourites")
+    @DeleteMapping("/{id}/favourites")
     public ResponseEntity<String> deleteFavouriteRecipe(@PathVariable Long id) {
         String message = favouritesService.deleteFavouriteRecipe(id);
         return new ResponseEntity<>(message, HttpStatus.OK);

@@ -3,6 +3,7 @@ package com.example.JavaProject.service.implementation;
 import com.example.JavaProject.dto.RegisterDto;
 import com.example.JavaProject.entity.*;
 import com.example.JavaProject.exception.ProfileHiddenException;
+import com.example.JavaProject.exception.UserNotFoundException;
 import com.example.JavaProject.mapper.UserMapper;
 import com.example.JavaProject.repository.RoleRepository;
 import com.example.JavaProject.repository.UserRepository;
@@ -10,10 +11,10 @@ import com.example.JavaProject.service.interfaces.AccountManagementService;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -21,56 +22,14 @@ public class AccountManagementServiceImpl implements AccountManagementService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-
-
-    @Override
-    public String promote(long id) {
-        Optional<User> foundUser = userRepository.findById(id);
-        if(foundUser == null){
-            return "User with id"+id+" doesn't exist";
-        }
-
-        User user = foundUser.get();
-
-        if(authenticationService.getCurrentUserId() == id){
-            return "User cannot promote oneself";
-        }
-
-        if(user.getRole().getName() == "ROLE_ADMIN"){
-            return "User with id"+id+" already is an admin";
-        }
-
-
-        Role userAdminRole = roleRepository.findByName("ROLE_ADMIN");
-        if(userAdminRole == null){
-            userAdminRole = new Role();
-            userAdminRole.setName("ROLE_ADMIN");
-            roleRepository.save(userAdminRole);
-        }
-
-        user.setRole(userAdminRole);
-        userRepository.save(user);
-        return "USER WITH ID "+id+" SUCCESSFULY PROMOTED TO ADMIN";
-    }
 
     @Override
     @Transactional
     public RegisterDto updateAccount(RegisterDto registerDto) {
-        Long userId = authenticationService.getCurrentUserId();
-
-        Optional<User> updatedUser = userRepository.findById(userId);
-        if (updatedUser.isEmpty()) {
-            throw new RuntimeException("No user found with currently logged account.");
-        }
-
-        User user = updatedUser.get();
-
-        if(user.isHidden()){
-            throw new ProfileHiddenException("Profile has been deleted");
-        }
+        User user = getUser();
 
         user.setUserName(registerDto.getUsername());
         user.setAge(registerDto.getAge());
@@ -85,38 +44,61 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     @Override
     @Transactional
     public String deleteAccount(){
-        Long userId = authenticationService.getCurrentUserId();
+        User user = getUser();
 
-        Optional<User> updatedUser = userRepository.findById(userId);
-        if (updatedUser.isEmpty()) {
-            throw new RuntimeException("No user found with currently logged account.");
-        }
-
-        User user = updatedUser.get();
-
-        if(user.isHidden()){
-            return "User has already been deleted";
-        }
         user.setHidden(true);
-
         userRepository.save(user);
-
         return "User has been successfully deleted";
     }
 
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    private User getUser() {
+        Long userId = authenticationService.getCurrentUserId();
+
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new PreAuthenticatedCredentialsNotFoundException("No user found with currently logged account."));
+
+        if(user.isHidden()) throw new ProfileHiddenException();
+        return user;
     }
 
     @Override
-    public String hideAccount(long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        if (user.isHidden()) {
-            return "User's account is already hidden.";
-        }
-        user.setHidden(true);
+    public String getInfoByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UserNotFoundException("email", email));
+
+        return user.isHidden() ? "User's account is hidden" : "User is visible";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public String promote(long id) {
+        if(authenticationService.getCurrentUserId() == id)
+            throw new RuntimeException("User cannot promote oneself");
+
+        String adminRole = "ROLE_ADMIN";
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        if(user.getRole().getName().equalsIgnoreCase(adminRole))
+            throw new RuntimeException("User with id: "+id+" already is an admin");
+
+        Role userAdminRole = roleRepository.findByName(adminRole);
+        user.setRole(userAdminRole);
         userRepository.save(user);
-        return "User account has been successfully hidden.";
+        return "USER WITH ID "+id+" SUCCESSFULY PROMOTED TO ADMIN";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public String hideAccount(long id, boolean hidden) {
+        User user = userRepository.findById(id)
+                        .orElseThrow(() -> new UserNotFoundException(id));
+
+        user.setHidden(hidden);
+        userRepository.save(user);
+        return hidden ?
+                "User account has been successfully hidden." :
+                "User account has been successfully unhidden.";
     }
 }

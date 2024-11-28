@@ -19,6 +19,7 @@ public class RecipeMapper {
 
     public Recipe mapToEntity(RecipeDto recipeDto){
         Recipe newRecipe = new Recipe();
+        newRecipe.setId(recipeDto.getId());
         newRecipe.setRecipeName(recipeDto.getRecipeName());
         newRecipe.setPreparationTime(recipeDto.getPreparationTime());
         newRecipe.setDifficulty(recipeDto.getDifficulty());
@@ -79,6 +80,7 @@ public class RecipeMapper {
 
     public RecipeDto mapToDto(Recipe recipe){
         RecipeDto newRecipeDto = new RecipeDto();
+        newRecipeDto.setId(recipe.getId());
         newRecipeDto.setRecipeName(recipe.getRecipeName());
         newRecipeDto.setDifficulty(recipe.getDifficulty());
         newRecipeDto.setPreparationTime(recipe.getPreparationTime());

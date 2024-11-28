@@ -1,9 +1,8 @@
 package com.example.JavaProject.controller;
 
 import com.example.JavaProject.dto.RegisterDto;
-import com.example.JavaProject.entity.User;
-import com.example.JavaProject.exception.ProfileHiddenException;
 import com.example.JavaProject.service.interfaces.AccountManagementService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,18 +11,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/account")
 @RequiredArgsConstructor
-public class AccountController {
+public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;
 
-//    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping
-    public ResponseEntity<RegisterDto> updateAccount(@RequestBody RegisterDto registerDto){
+    public ResponseEntity<RegisterDto> updateAccount(@RequestBody @Valid RegisterDto registerDto){
 
         return new ResponseEntity<>(accountManagementService.updateAccount(registerDto), HttpStatus.OK);
     }
 
-//    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping
     public ResponseEntity<String> deleteAccount(){ //make fancy delete == hide
 
@@ -31,27 +28,15 @@ public class AccountController {
     }
 
     @GetMapping("/email/{email}")
-//    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> getAccountDetailsByEmail(@PathVariable String email) {
-        User user = accountManagementService.getUserByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.isHidden()) {
-            throw new ProfileHiddenException("Profile is hidden");
-        }
-
-        return ResponseEntity.ok("User profile is visible");
+        return ResponseEntity.ok(accountManagementService.getInfoByEmail(email));
     }
 
-
-
-
     //ADMIN ACTIONS: ✔️
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PutMapping("/account/hide/{id}")
     @PutMapping("/admin/hide/{id}")
-    public ResponseEntity<String> hideAccount(@PathVariable long id) {
-        return new ResponseEntity<>(accountManagementService.hideAccount(id), HttpStatus.OK);
+    public ResponseEntity<String> hideAccount(@PathVariable long id,
+                                              @RequestParam(defaultValue = "true") Boolean hidden){
+        return new ResponseEntity<>(accountManagementService.hideAccount(id, hidden), HttpStatus.OK);
     }
 
     @PutMapping("/admin/promote/{id}")

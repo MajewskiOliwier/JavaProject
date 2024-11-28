@@ -11,9 +11,9 @@ import com.example.JavaProject.service.interfaces.AuthenticationService;
 import lombok.AllArgsConstructor;
 import com.example.JavaProject.entity.User;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -63,11 +63,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationResponse login(LoginDto loginDto) {
         try {
             User newUser = userRepository.findByEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+                    .orElseThrow(() -> new UserNotFoundException("email", loginDto.getEmail()));
 
-            if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword())) {
-                throw new RuntimeException("Invalid password");
-            }
+            if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword()))
+                throw new BadCredentialsException("Invalid password");
+
             String token = jwtServiceImpl.generateToken(newUser);
             return new AuthenticationResponse(token, newUser.getRole().getName());
         } catch (AuthenticationException e) {
@@ -78,14 +78,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Long getCurrentUserId() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("Principal: " + principal);
-        if (principal instanceof UserDetails userDetails) {
-            String email = userDetails.getUsername();
-            return userRepository.findByEmail(email)
-                    .map(User::getId)
-                    .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
-        }
-        throw new UserNotFoundException("User is not authenticated");
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userRepository.findByEmail(email)
+                .map(User::getId)
+                .orElseThrow(() -> new UserNotFoundException("email", email));
     }
 }
