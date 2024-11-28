@@ -10,7 +10,5 @@ public interface ImportService {
 
     List<RecipeDto> importRecipesFromJson(String json) throws IOException;
 
-//    List<RecipeDto> importRecipesFromJson(MultipartFile json) throws IOException;
-
     List<RecipeDto> importRecipesFromXml(String xml) throws IOException;
 }

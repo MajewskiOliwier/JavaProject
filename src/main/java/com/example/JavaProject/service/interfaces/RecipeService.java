@@ -30,8 +30,6 @@ public interface RecipeService {
 
     List<RecipeResponse> findRecipesByIngredient(String ingredientName);
 
-//    void saveAll(List<RecipeDto> recipes);
-
     List<RecipeDto> getAllRecipeDtos();
 
 
