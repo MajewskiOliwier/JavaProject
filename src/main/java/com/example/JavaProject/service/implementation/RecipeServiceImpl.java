@@ -13,11 +13,9 @@ import com.example.JavaProject.repository.IngredientRepository;
 import com.example.JavaProject.repository.RecipeIngredientRepository;
 import com.example.JavaProject.repository.RecipeRepository;
 import com.example.JavaProject.repository.UserRepository;
-import com.example.JavaProject.response.LikesCountResponse;
 import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,29 +25,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 @Service
 public class RecipeServiceImpl implements RecipeService {
-    //FIXME: powinien być interface!
-    private final EmailServiceImpl emailServiceImpl;
-
     private RecipeRepository recipeRepository;
     private IngredientRepository ingredientRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
     private UserRepository userRepository;
-
-
     private RecipeMapper recipeMapper;
     private IngredientsMapper ingredientsMapper;
-
-    //FIXME: nie powinny być używane
-//    private EntityManager entityManager;
-//    private static final Logger logger = LoggerFactory.getLogger(RecipeServiceImpl.class);
-
-
     private AuthenticationService authenticationService;
 
     @Override
@@ -75,10 +60,10 @@ public class RecipeServiceImpl implements RecipeService {
 
 
     @Override
-    public RecipeResponse getRecipe(long id){
+    public RecipeResponse getRecipe(long id) {
         Optional<Recipe> recipe = recipeRepository.findById(id);
 
-        if(recipe.isEmpty()) {
+        if (recipe.isEmpty()) {
 //           throw Exception("custome Exception");
         }
 
@@ -103,26 +88,6 @@ public class RecipeServiceImpl implements RecipeService {
         recipeResponse.setIngredients(ingredientDtos);
         return recipeResponse;
     }
-
-    @Override
-    public LikesCountResponse getRecipeLikes(long id) {
-        Optional<Recipe> recipe = recipeRepository.findById(id);
-
-        if(recipe.isEmpty()) {
-            throw new RuntimeException("Recipe doesn't exist");
-        }
-
-        Recipe foundRecipe = recipe.get();
-        if(isHidden(foundRecipe)){
-            throw new ProfileHiddenException("Profile has been deleted");
-        }
-
-        int likesCount =  (int)foundRecipe.getLikedby().stream().count();
-        return new LikesCountResponse(
-                likesCount
-        );
-    }
-
     @Override
     public String addRecipe(RecipeDto recipeDto) {
         Long userId = authenticationService.getCurrentUserId();
@@ -165,19 +130,16 @@ public class RecipeServiceImpl implements RecipeService {
         return "Added new recipe";
     }
 
-
-
-
     @Transactional
     @Override
     public String modifyRecipe(long id, RecipeDto recipeDto) {
         Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("ID not found"));
 
-        if(!isOwner(updatedRecipe)){
+        if (!isOwner(updatedRecipe)) {
             return "User can only modify their recipe";
         }
 
-        if(isHidden(updatedRecipe)){
+        if (isHidden(updatedRecipe)) {
             return "User is banned";
         }
 
@@ -196,7 +158,7 @@ public class RecipeServiceImpl implements RecipeService {
         return Objects.equals(updatedRecipe.getUser().getId(), authenticationService.getCurrentUserId());
     }
 
-    private static boolean isHidden(Recipe updatedRecipe) {
+    public static boolean isHidden(Recipe updatedRecipe) {
         return updatedRecipe.getUser().isHidden();
     }
 
@@ -207,7 +169,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
-        for(IngredientDto ingredientDto : recipeDto.getIngredients()){
+        for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
             Ingredient ingredient = new Ingredient();
             ingredient.setIngredientName(ingredientDto.getIngredientName());
             ingredient.setMeasurement(ingredientDto.getMeasurement());
@@ -226,13 +188,13 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void RemoveOldIngredients(RecipeDto recipeDto, List<RecipeIngredient> existingIngredients) {
-        for(RecipeIngredient recipeIngredient : existingIngredients){
-            boolean unchangedIngredient =  recipeDto.getIngredients()
+        for (RecipeIngredient recipeIngredient : existingIngredients) {
+            boolean unchangedIngredient = recipeDto.getIngredients()
                     .stream()
                     .anyMatch(ingredientDto -> (ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName())
-                    && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
+                            && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
 
-            if(!unchangedIngredient){
+            if (!unchangedIngredient) {
                 recipeIngredient.getRecipe().getRecipeIngredients().remove(recipeIngredient);
                 recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
                 recipeIngredient.setRecipe(null);
@@ -241,171 +203,6 @@ public class RecipeServiceImpl implements RecipeService {
                 recipeIngredientRepository.delete(recipeIngredient);
             }
         }
-    }
-
-    @Override
-    public String addLike(long id) {
-        Long userID = authenticationService.getCurrentUserId();
-
-        if (userID == null) {
-            return "User not logged in";
-        }
-
-        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
-        if(foundRecipe.isEmpty()){
-            return "Recipe not found";
-        }
-
-        Recipe recipe = foundRecipe.get();
-
-        boolean isAlreadyLiked = recipe.getLikedby().stream().anyMatch(user -> user.getId().equals(userID));
-        if (isAlreadyLiked) {
-            return "User already liked this recipe";
-        }
-
-        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
-
-        recipe.getLikedby().add(user);
-        recipeRepository.save(recipe);
-
-        // Wyciągnij e-mail autora przepisu
-        String recipientEmail = recipe.getUser().getEmail();
-
-        // Logowanie e-maila
-//        logger.info("Sending email to: " + recipientEmail);
-
-// Logowanie e-maila, na który jest wysyłany e-mail
-        System.out.println("Sending email to: " + recipientEmail);
-
-        // Wyślij e-mail do autora przepisu
-        emailServiceImpl.sendLikeNotification(recipe.getUser().getEmail());
-        return "Recipe liked successfully ";
-    }
-
-    public String removeLike(long id) {
-        Long userID = authenticationService.getCurrentUserId();
-
-        if (userID == null) {
-            return "User not logged in";
-        }
-
-        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
-        if (foundRecipe.isEmpty()) {
-            return "Recipe not found";
-        }
-
-        Recipe recipe = foundRecipe.get();
-
-        boolean isLiked = recipe.getLikedby().stream().anyMatch(user -> user.getId().equals(userID));
-        if (!isLiked) {
-            return "User has not liked this recipe";
-        }
-
-        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User Not Found"));
-
-        // Usuwamy użytkownika z listy polubionych
-        recipe.getLikedby().remove(user);
-        recipeRepository.save(recipe);
-
-        return "Recipe unliked successfully";
-    }
-
-
-
-
-    @Transactional
-    @Override
-    public String addToFavourite(long id) {
-        Long userID = authenticationService.getCurrentUserId();
-
-        if (userID == null) {
-            return "User not logged in";
-        }
-
-        Optional<Recipe> foundRecipe = recipeRepository.findById(id);
-        if (foundRecipe.isEmpty()) {
-            return "Recipe not found";
-        }
-
-        Recipe recipe = foundRecipe.get();
-
-        boolean isUserDeleted = recipe.getUser().isHidden();
-        if (isUserDeleted) {
-            return "User has been deleted";
-        }
-
-        boolean isAlreadyFavoured = recipe.getFavouritedBy().stream()
-                .anyMatch(user -> user.getId().equals(userID));
-        if (isAlreadyFavoured) {
-            return "User has already added this recipe to favourite";
-        }
-
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
-
-        recipe.getFavouritedBy().add(user);
-        recipeRepository.save(recipe);
-        return "Recipe added to favourites successfully ";
-    }
-
-    @Override
-    public List<RecipeResponse> getFavouriteRecipes() {
-        Long userID = authenticationService.getCurrentUserId();
-        Optional<User> updatedUser = userRepository.findById(userID);
-        if (updatedUser.isEmpty()) {
-            throw new RuntimeException("No user found with currently logged account.");
-        }
-
-        User user = updatedUser.get();
-
-        if(user.isHidden()){
-            throw new ProfileHiddenException("Profile has been deleted");
-        }
-
-        List<RecipeResponse> recipeResponses = new ArrayList<>();
-        for (Recipe recipe : user.getFavourites()) {
-            if (recipe.getUser().isHidden()) {
-                continue;
-            }
-
-            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-            RecipeResponse recipeResponse = new RecipeResponse();
-
-            List<IngredientDto> ingredientDtos = new ArrayList<>();
-            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
-                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
-            }
-
-            recipeResponse.setIngredients(ingredientDtos);
-            recipeResponse.setRecipeName(recipeDto.getRecipeName());
-            recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
-            recipeResponse.setDifficulty(recipeDto.getDifficulty());
-            recipeResponse.setAuthor(recipeDto.getAuthor());
-            recipeResponse.setLikes(recipeDto.getLikes());
-            recipeResponses.add(recipeResponse);
-        }
-
-        return recipeResponses;
-    }
-
-    @Override
-    public String deleteFavouriteRecipe(Long id) {
-        Long userID = authenticationService.getCurrentUserId();
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
-
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-
-        if (!user.getFavourites().contains(recipe)) {
-            return "Recipe is not in favourites.";
-        }
-
-        user.getFavourites().remove(recipe);
-
-        userRepository.save(user);
-
-        return "Recipe removed from favourites successfully";
     }
 
     @Override
@@ -440,15 +237,4 @@ public class RecipeServiceImpl implements RecipeService {
                 .collect(Collectors.toList());
         return recipeDtos;
     }
-
-//    @Override
-//    public void saveAll(List<RecipeDto> recipes) {
-//        List<Recipe> recipeEntities = recipes.stream()
-//                .map(recipeMapper::mapToEntity)
-//                .collect(Collectors.toList());
-//        recipeRepository.saveAll(recipeEntities);
-//    }
-
-
-
 }
