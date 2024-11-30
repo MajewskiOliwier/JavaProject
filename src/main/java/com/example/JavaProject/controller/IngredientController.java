@@ -10,16 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/ingredients")
 @RequiredArgsConstructor
 public class IngredientController {
 
-        private final IngredientService ingredientService;
+    private final IngredientService ingredientService;
 
-        @GetMapping("/ingredients")
-        public ResponseEntity<List<IngredientResponse>> getAllIngredients(@RequestParam(defaultValue = "") String phrase) {
-            return new ResponseEntity<>(ingredientService.getIngredients(phrase), HttpStatus.OK);
-        }
-
-
+    public ResponseEntity<List<IngredientResponse>> getAllIngredients(
+                                                        @RequestParam(defaultValue = "") String phrase) {
+        return new ResponseEntity<>(ingredientService.getIngredients(phrase), HttpStatus.OK);
+    }
 }

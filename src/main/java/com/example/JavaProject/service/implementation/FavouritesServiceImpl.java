@@ -8,13 +8,10 @@ import com.example.JavaProject.entity.User;
 import com.example.JavaProject.exception.ProfileHiddenException;
 import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
-import com.example.JavaProject.repository.IngredientRepository;
-import com.example.JavaProject.repository.RecipeIngredientRepository;
 import com.example.JavaProject.repository.RecipeRepository;
 import com.example.JavaProject.repository.UserRepository;
 import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
-import com.example.JavaProject.service.interfaces.EmailService;
 import com.example.JavaProject.service.interfaces.FavouritesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +67,7 @@ public class FavouritesServiceImpl implements FavouritesService {
         Long userID = authenticationService.getCurrentUserId();
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
+
         if (user.isHidden()) {
             throw new ProfileHiddenException("Profile has been deleted");
         }

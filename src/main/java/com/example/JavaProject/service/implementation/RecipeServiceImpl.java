@@ -7,6 +7,7 @@ import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.entity.RecipeIngredient;
 import com.example.JavaProject.entity.User;
 import com.example.JavaProject.exception.ProfileHiddenException;
+import com.example.JavaProject.exception.RecipeNotFoundException;
 import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
 import com.example.JavaProject.repository.IngredientRepository;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -40,39 +40,20 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public List<RecipeResponse> getAllRecipes() {
         List<Recipe> recipes = recipeRepository.findAll();
-        List<RecipeResponse> recipeResponses = new ArrayList<>();
-        for (Recipe recipe : recipes) {
-            if (isHidden(recipe)) {
-                continue;
-            }
-
-            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-            List<IngredientDto> ingredientDtos = new ArrayList<>();
-            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
-                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
-            }
-
-            RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
-            recipeResponses.add(recipeResponse);
-        }
-        return recipeResponses;
+        return extractedMethod(recipes);
     }
 
 
     @Override
     public RecipeResponse getRecipe(long id) {
-        Optional<Recipe> recipe = recipeRepository.findById(id);
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(
+                                () -> new RecipeNotFoundException(id));
 
-        if (recipe.isEmpty()) {
-//           throw Exception("custome Exception");
+        if (isHidden(recipe)) {
+            throw new ProfileHiddenException();
         }
 
-        Recipe foundRecipe = recipe.get();
-        if (isHidden(foundRecipe)) {
-            throw new ProfileHiddenException("Profile has been deleted");
-        }
-
-        RecipeDto recipeDto = recipeMapper.mapToDto(foundRecipe);
+        RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
         List<IngredientDto> ingredientDtos = recipeDto.getIngredients();
 
         return getRecipeResponse(recipeDto, ingredientDtos);
@@ -209,6 +190,10 @@ public class RecipeServiceImpl implements RecipeService {
     public List<RecipeResponse> findRecipesByIngredient(String ingredientName) {
         List<Recipe> recipes = recipeRepository.findRecipesByIngredientName(ingredientName);
 
+        return extractedMethod(recipes);
+    }
+
+    private List<RecipeResponse> extractedMethod(List<Recipe> recipes) {
         List<RecipeResponse> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (isHidden(recipe)) {
@@ -231,10 +216,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     public List<RecipeDto> getAllRecipeDtos() {
         List<Recipe> recipes = recipeRepository.findAll();
-        System.out.println("Found " + recipes.size() + " recipes in the database");
-        List<RecipeDto> recipeDtos = recipes.stream()
-                .map(recipeMapper::mapToDto)
-                .collect(Collectors.toList());
-        return recipeDtos;
+        return recipes.stream()
+                    .map(recipeMapper::mapToDto)
+                    .collect(Collectors.toList());
     }
 }
