@@ -4,7 +4,6 @@ import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.service.interfaces.ExportService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -16,25 +15,19 @@ public class ExportServiceImpl implements ExportService {
     private final ObjectMapper objectMapper;
     private final XmlMapper xmlMapper;
 
-    // Konstruktor z wstrzykiwaniem zależności przez Spring
-    @Autowired
     public ExportServiceImpl(ObjectMapper objectMapper, XmlMapper xmlMapper) {
         this.objectMapper = objectMapper;
-
-        // Konfiguracja xmlMapper, aby włączać pretty print
         this.xmlMapper = xmlMapper;
-        this.xmlMapper.writerWithDefaultPrettyPrinter(); // Włącza pretty print
+        this.xmlMapper.writerWithDefaultPrettyPrinter();
     }
 
     @Override
     public byte[] exportRecipesToJson(List<RecipeDto> recipes) throws IOException {
-        return objectMapper.writeValueAsBytes(recipes);  // Eksportowanie do JSON
+        return objectMapper.writeValueAsBytes(recipes);
     }
 
     @Override
     public byte[] exportRecipesToXml(List<RecipeDto> recipes) throws IOException {
-        return xmlMapper.writeValueAsBytes(recipes);  // Eksportowanie do XML z pretty print
+        return xmlMapper.writeValueAsBytes(recipes);
     }
-
-
 }

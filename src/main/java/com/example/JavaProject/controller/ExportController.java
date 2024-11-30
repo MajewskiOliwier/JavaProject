@@ -23,25 +23,35 @@ public class ExportController {
         this.recipeService = recipeService;
     }
 
-    @GetMapping("/json")
-    public ResponseEntity<byte[]> exportRecipesToJson() throws IOException {
-        // Pobierz przepisy za pomocą RecipeService
-        List<RecipeDto> recipes = recipeService.getAllRecipeDtos();  // To pobiera przepisy jako RecipeDto
-        byte[] data = ExportService.exportRecipesToJson(recipes);  // Używamy metody serwisu do eksportu do JSON
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setContentDisposition(ContentDisposition.attachment().filename("recipes.json").build());
-        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<byte[]> exportRecipes(
+                            @RequestParam(defaultValue = "json") final String format) throws IOException {
+        
+        List<RecipeDto> recipes = recipeService.getAllRecipeDtos();
+        byte[] data;
+        
+        if (format.equalsIgnoreCase("xml")) {
+            data = ExportService.exportRecipesToXml(recipes);
+            HttpHeaders headers = getHeaders(MediaType.APPLICATION_XML, format);
+            return new ResponseEntity<>(data, headers, HttpStatus.OK);
+
+        } else if (format.equalsIgnoreCase("json")) {
+            data = ExportService.exportRecipesToJson(recipes);
+            HttpHeaders headers = getHeaders(MediaType.APPLICATION_JSON, format);
+            return new ResponseEntity<>(data, headers, HttpStatus.OK);
+
+        } else {
+            throw new IllegalArgumentException("Invalid file format");
+        }
     }
 
-    @GetMapping("/xml")
-    public ResponseEntity<byte[]> exportRecipesToXml() throws IOException {
-        // Pobierz przepisy za pomocą RecipeService
-        List<RecipeDto> recipes = recipeService.getAllRecipeDtos();  // To pobiera przepisy jako RecipeDto
-        byte[] data = ExportService.exportRecipesToXml(recipes);  // Używamy metody serwisu do eksportu do XML
+    private static HttpHeaders getHeaders(MediaType type, String format) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_XML);
-        headers.setContentDisposition(ContentDisposition.attachment().filename("recipes.xml").build());
-        return new ResponseEntity<>(data, headers, HttpStatus.OK);
+        headers.setContentType(type);
+        headers.setContentDisposition(ContentDisposition
+                                .attachment()
+                                .filename("recipes." + format.toLowerCase())
+                                .build());
+        return headers;
     }
 }
