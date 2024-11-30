@@ -1,15 +1,9 @@
 package com.example.JavaProject.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 @Schema(description = "Response containing the access token and token type")
 public class AuthenticationResponse {
 
@@ -17,5 +11,9 @@ public class AuthenticationResponse {
     private String accessToken;
 
     @Schema(description = "type of token", example = "Bearer")
-    private String tokenType;
+    private String tokenType = "Bearer";
+
+    public AuthenticationResponse(String accessToken) {
+        this.accessToken = accessToken;
+    }
 }

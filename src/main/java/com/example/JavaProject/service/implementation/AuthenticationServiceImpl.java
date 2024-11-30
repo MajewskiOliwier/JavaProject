@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import com.example.JavaProject.entity.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,24 +28,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String register(RegisterDto registerDto) {
-        if (userRepository.existsByEmail(registerDto.getEmail())) {
+        if (userRepository.existsByEmail(registerDto.getEmail()))
             throw new RuntimeException(registerDto.getEmail() + " Email is taken");
-        }
 
-        if (userRepository.existsByUserName(registerDto.getUsername())) {
+        if (userRepository.existsByUserName(registerDto.getUsername()))
             throw new RuntimeException(registerDto.getUsername() + " UserName is taken");
-        }
 
         Role userRole = roleRepository.findByName("ROLE_USER");
-        if (userRole == null) {
-            userRole = new Role();
-            userRole.setName("ROLE_USER");
-            roleRepository.save(userRole);
-            Role adminRole = new Role();
-            adminRole.setName("ROLE_ADMIN");
-            roleRepository.save(adminRole);
-        }
-
         var user = User.builder()
                 .userName(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
@@ -61,19 +49,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse login(LoginDto loginDto) {
-        try {
-            User newUser = userRepository.findByEmail(loginDto.getEmail())
-                    .orElseThrow(() -> new UserNotFoundException("email", loginDto.getEmail()));
 
-            if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword()))
-                throw new BadCredentialsException("Invalid password");
+        User newUser = userRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("email", loginDto.getEmail()));
 
-            String token = jwtServiceImpl.generateToken(newUser);
-            return new AuthenticationResponse(token, newUser.getRole().getName());
-        } catch (AuthenticationException e) {
-            return new AuthenticationResponse(null, null);
+        if (!passwordEncoder.matches(loginDto.getPassword(), newUser.getPassword()))
+            throw new BadCredentialsException("Invalid password");
 
-        }
+        String token = jwtServiceImpl.generateToken(newUser);
+        return new AuthenticationResponse(token);
     }
 
     @Override
