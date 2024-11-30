@@ -2,7 +2,6 @@ package com.example.JavaProject.controller;
 
 import com.example.JavaProject.dto.RecipeDto;
 
-import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.RecipeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,12 +18,12 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     @GetMapping
-    public ResponseEntity<List<RecipeResponse>> getAllRecipe() {
+    public ResponseEntity<List<RecipeDto>> getAllRecipe() {
         return new ResponseEntity<>(recipeService.getAllRecipes(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RecipeResponse> getAllRecipe(@PathVariable long id) {
+    public ResponseEntity<RecipeDto> getAllRecipe(@PathVariable long id) {
         return new ResponseEntity<>(recipeService.getRecipe(id), HttpStatus.OK);
     }
 
@@ -39,8 +38,8 @@ public class RecipeController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<RecipeResponse>> findRecipesByIngredient(@RequestParam String ingredientName) {
-        List<RecipeResponse> recipes = recipeService.findRecipesByIngredient(ingredientName);
+    public ResponseEntity<List<RecipeDto>> findRecipesByIngredient(@RequestParam String ingredientName) {
+        List<RecipeDto> recipes = recipeService.findRecipesByIngredient(ingredientName);
         return new ResponseEntity<>(recipes, HttpStatus.OK);
     }
 }

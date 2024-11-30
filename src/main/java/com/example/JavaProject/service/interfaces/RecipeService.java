@@ -1,21 +1,20 @@
 package com.example.JavaProject.service.interfaces;
 
 import com.example.JavaProject.dto.RecipeDto;
-import com.example.JavaProject.response.RecipeResponse;
 
 import java.util.List;
 
 public interface RecipeService {
 
-    List<RecipeResponse> getAllRecipes();
+    List<RecipeDto> getAllRecipes();
 
-    RecipeResponse getRecipe(long id);
+    RecipeDto getRecipe(long id);
 
     String addRecipe(RecipeDto recipeDto);
 
     String modifyRecipe(long id, RecipeDto recipeDto);
 
-    List<RecipeResponse> findRecipesByIngredient(String ingredientName);
+    List<RecipeDto> findRecipesByIngredient(String ingredientName);
 
     List<RecipeDto> getAllRecipeDtos();
 

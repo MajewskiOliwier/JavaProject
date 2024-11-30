@@ -10,7 +10,6 @@ import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
 import com.example.JavaProject.repository.RecipeRepository;
 import com.example.JavaProject.repository.UserRepository;
-import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.FavouritesService;
 import jakarta.transaction.Transactional;
@@ -63,7 +62,7 @@ public class FavouritesServiceImpl implements FavouritesService {
     }
 
     @Override
-    public List<RecipeResponse> getFavouriteRecipes() {
+    public List<RecipeDto> getFavouriteRecipes() {
         Long userID = authenticationService.getCurrentUserId();
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
@@ -71,13 +70,13 @@ public class FavouritesServiceImpl implements FavouritesService {
         if (user.isHidden()) {
             throw new ProfileHiddenException("Profile has been deleted");
         }
-        List<RecipeResponse> recipeResponses = new ArrayList<>();
+        List<RecipeDto> recipeResponses = new ArrayList<>();
         for (Recipe recipe : user.getFavourites()) {
             if (recipe.getUser().isHidden()) {
                 continue;
             }
             RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-            RecipeResponse recipeResponse = new RecipeResponse();
+            RecipeDto recipeResponse = new RecipeDto();
 
             List<IngredientDto> ingredientDtos = new ArrayList<>();
             for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {

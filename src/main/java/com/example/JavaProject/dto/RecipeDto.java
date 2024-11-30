@@ -33,6 +33,8 @@ public class RecipeDto {
     @Size(min=1, max = 50, message = "Recipe name length must be in range <1,50>")
     private String recipeName;
 
+    private String author;
+
     @JsonProperty("preparationTime")
     @JacksonXmlProperty(localName = "preparationTime")
     @Min(1)
@@ -45,13 +47,11 @@ public class RecipeDto {
     @Max(5)
     private int difficulty;
 
+    private int likes;
+
     @JsonProperty("ingredients")
     @JacksonXmlProperty(localName = "ingredients")
     private List<IngredientDto> ingredients;
-
-    private String author;
-
-    private int likes;
 
     public RecipeDto(Recipe recipe) {
         this.id = recipe.getId();

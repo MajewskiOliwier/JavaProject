@@ -1,6 +1,6 @@
 package com.example.JavaProject.controller;
 
-import com.example.JavaProject.response.RecipeResponse;
+import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.service.interfaces.FavouritesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ public class FavouritesController {
     }
 
     @GetMapping("/favourites")
-    public ResponseEntity<List<RecipeResponse>> getFavouriteRecipes() {
+    public ResponseEntity<List<RecipeDto>> getFavouriteRecipes() {
         return new ResponseEntity<>(favouritesService.getFavouriteRecipes(), HttpStatus.OK);
     }
 

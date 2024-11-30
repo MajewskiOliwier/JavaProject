@@ -1,6 +1,6 @@
 package com.example.JavaProject.service.interfaces;
 
-import com.example.JavaProject.response.RecipeResponse;
+import com.example.JavaProject.dto.RecipeDto;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ public interface FavouritesService {
 
     String addToFavourite(long id);
 
-    List<RecipeResponse> getFavouriteRecipes();
+    List<RecipeDto> getFavouriteRecipes();
 
     String deleteFavouriteRecipe(Long id);
 }

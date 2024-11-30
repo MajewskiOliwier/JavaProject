@@ -14,7 +14,6 @@ import com.example.JavaProject.repository.IngredientRepository;
 import com.example.JavaProject.repository.RecipeIngredientRepository;
 import com.example.JavaProject.repository.RecipeRepository;
 import com.example.JavaProject.repository.UserRepository;
-import com.example.JavaProject.response.RecipeResponse;
 import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
 import jakarta.transaction.Transactional;
@@ -38,14 +37,14 @@ public class RecipeServiceImpl implements RecipeService {
     private AuthenticationService authenticationService;
 
     @Override
-    public List<RecipeResponse> getAllRecipes() {
+    public List<RecipeDto> getAllRecipes() {
         List<Recipe> recipes = recipeRepository.findAll();
         return extractedMethod(recipes);
     }
 
 
     @Override
-    public RecipeResponse getRecipe(long id) {
+    public RecipeDto getRecipe(long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(
                                 () -> new RecipeNotFoundException(id));
 
@@ -56,11 +55,11 @@ public class RecipeServiceImpl implements RecipeService {
         RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
         List<IngredientDto> ingredientDtos = recipeDto.getIngredients();
 
-        return getRecipeResponse(recipeDto, ingredientDtos);
+        return getRecipeDto(recipeDto, ingredientDtos);
     }
 
-    private static RecipeResponse getRecipeResponse(RecipeDto recipeDto, List<IngredientDto> ingredientDtos) {
-        RecipeResponse recipeResponse = new RecipeResponse();
+    private static RecipeDto getRecipeDto(RecipeDto recipeDto, List<IngredientDto> ingredientDtos) {
+        RecipeDto recipeResponse = new RecipeDto();
         recipeResponse.setRecipeName(recipeDto.getRecipeName());
         recipeResponse.setDifficulty(recipeDto.getDifficulty());
         recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
@@ -187,14 +186,14 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public List<RecipeResponse> findRecipesByIngredient(String ingredientName) {
+    public List<RecipeDto> findRecipesByIngredient(String ingredientName) {
         List<Recipe> recipes = recipeRepository.findRecipesByIngredientName(ingredientName);
 
         return extractedMethod(recipes);
     }
 
-    private List<RecipeResponse> extractedMethod(List<Recipe> recipes) {
-        List<RecipeResponse> recipeResponses = new ArrayList<>();
+    private List<RecipeDto> extractedMethod(List<Recipe> recipes) {
+        List<RecipeDto> recipeResponses = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (isHidden(recipe)) {
                 continue;
@@ -207,7 +206,7 @@ public class RecipeServiceImpl implements RecipeService {
                 ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
             }
 
-            RecipeResponse recipeResponse = getRecipeResponse(recipeDto, ingredientDtos);
+            RecipeDto recipeResponse = getRecipeDto(recipeDto, ingredientDtos);
             recipeResponses.add(recipeResponse);
         }
 

@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api/recipes")
 @RequiredArgsConstructor
@@ -29,5 +28,4 @@ public class LikesController {
     public ResponseEntity<String> removeRecipeLike(@PathVariable long id) {
         return new ResponseEntity<>(likesService.removeLike(id), HttpStatus.OK);
     }
-
 }
