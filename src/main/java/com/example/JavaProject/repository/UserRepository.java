@@ -1,8 +1,6 @@
 package com.example.JavaProject.repository;
 
-import com.example.JavaProject.dto.RegisterDto;
 import com.example.JavaProject.entity.User;
-import com.example.JavaProject.response.LikesCountResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

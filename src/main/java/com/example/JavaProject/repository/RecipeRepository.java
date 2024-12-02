@@ -13,10 +13,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     Optional<Recipe> findById(long id);
 
     @Query("SELECT COUNT(u) FROM Recipe r JOIN r.likedby u WHERE r.id = :recipeId")
-    long countLikesByRecipeId(long id);
-
-    @Query("SELECT COUNT(u) FROM Recipe r JOIN r.favouritedBy u WHERE r.id = :recipeId")
-    long countFavouritesByRecipeId(@Param("recipeId") Long recipeId);
+    Long countLikesByRecipeId(Long recipeId);
 
     @Query("SELECT r FROM Recipe r JOIN r.recipeIngredients ri JOIN ri.ingredient i WHERE i.ingredientName LIKE %:ingredientName%")
     List<Recipe> findRecipesByIngredientName(@Param("ingredientName") String ingredientName);

@@ -1,11 +1,11 @@
 package com.example.JavaProject.service.implementation;
 
-import com.example.JavaProject.dto.IngredientDto;
 import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.entity.Recipe;
-import com.example.JavaProject.entity.RecipeIngredient;
 import com.example.JavaProject.entity.User;
 import com.example.JavaProject.exception.ProfileHiddenException;
+import com.example.JavaProject.exception.RecipeNotFoundException;
+import com.example.JavaProject.exception.UserNotFoundException;
 import com.example.JavaProject.mapper.IngredientsMapper;
 import com.example.JavaProject.mapper.RecipeMapper;
 import com.example.JavaProject.repository.RecipeRepository;
@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,31 +31,15 @@ public class FavouritesServiceImpl implements FavouritesService {
     @Transactional
     @Override
     public String addToFavourite(long id) {
-        Long userID = authenticationService.getCurrentUserId();
+        Result result = getResult(id);
 
-        if (userID == null) {
-            return "User not logged in";
-        }
+        if (result.user().isHidden())
+            throw new ProfileHiddenException();
+        if(result.recipe().getFavouritedBy().contains(result.user()))
+            throw new RuntimeException("User has already added this recipe to favourites");
 
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-
-        if (recipe.getUser().isHidden()) {
-            return "User has been deleted";
-        }
-
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
-
-        boolean isAlreadyFavoured = recipe.getFavouritedBy().stream()
-                .anyMatch(favUser -> favUser.getId().equals(userID));
-
-        if (isAlreadyFavoured) {
-            return "User has already added this recipe to favourites";
-        }
-
-        recipe.getFavouritedBy().add(user);
-        recipeRepository.save(recipe);
+        result.recipe().getFavouritedBy().add(result.user());
+        recipeRepository.save(result.recipe());
 
         return "Recipe added to favourites successfully";
     }
@@ -64,50 +47,38 @@ public class FavouritesServiceImpl implements FavouritesService {
     @Override
     public List<RecipeDto> getFavouriteRecipes() {
         Long userID = authenticationService.getCurrentUserId();
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
+        User user = userRepository.findById(userID).orElseThrow(
+                            () -> new UserNotFoundException(userID));
 
-        if (user.isHidden()) {
-            throw new ProfileHiddenException("Profile has been deleted");
-        }
-        List<RecipeDto> recipeResponses = new ArrayList<>();
-        for (Recipe recipe : user.getFavourites()) {
-            if (recipe.getUser().isHidden()) {
-                continue;
-            }
-            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-            RecipeDto recipeResponse = new RecipeDto();
+        if (user.isHidden()) throw new ProfileHiddenException();
 
-            List<IngredientDto> ingredientDtos = new ArrayList<>();
-            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
-                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
-            }
-            recipeResponse.setIngredients(ingredientDtos);
-            recipeResponse.setRecipeName(recipeDto.getRecipeName());
-            recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
-            recipeResponse.setDifficulty(recipeDto.getDifficulty());
-            recipeResponse.setAuthor(recipeDto.getAuthor());
-            recipeResponse.setLikes(recipeDto.getLikes());
-            recipeResponses.add(recipeResponse);
-        }
-
-        return recipeResponses;
+        return user.getFavourites().stream()
+                        .map(recipeMapper::mapToDto)
+                        .toList();
     }
 
     @Transactional
     @Override
     public String deleteFavouriteRecipe(Long id) {
-        Long userID = authenticationService.getCurrentUserId();
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("No user found with currently logged account."));
-        Recipe recipe = recipeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Recipe not found"));
-        if (!user.getFavourites().contains(recipe)) {
-            return "Recipe is not in favourites.";
-        }
+        Result result = getResult(id);
 
-        user.getFavourites().remove(recipe);
-        userRepository.save(user);
+        if (!result.user().getFavourites().contains(result.recipe()))
+            throw new RuntimeException("Recipe is not in favourites.");
+
+        result.user().getFavourites().remove(result.recipe());
+        userRepository.save(result.user());
         return "Recipe removed from favourites successfully";
     }
+
+    private Result getResult(long id) {
+        Long userID = authenticationService.getCurrentUserId();
+
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(id));
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new UserNotFoundException(userID));
+        return new Result(recipe, user);
+    }
+
+    private record Result(Recipe recipe, User user) {}
 }
