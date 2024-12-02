@@ -82,7 +82,7 @@ public class AuthenticationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.accessToken").isString())
-                .andExpect(jsonPath("$.tokenType", is("ROLE_USER")));
+                .andExpect(jsonPath("$.tokenType", is("Bearer")));
     }
 
     @Test
@@ -94,9 +94,9 @@ public class AuthenticationControllerTest {
                 .content(objectMapper.writeValueAsString(login)));
 
         result
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.message", is("User not found")));
+                .andExpect(jsonPath("$.message", is("User not found with email: email")));
     }
 
     @Test
@@ -107,8 +107,8 @@ public class AuthenticationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(login)));
         result
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.message", is("Invalid password")));
+                .andExpect(jsonPath("$.message", is("Authorization error: Invalid password")));
     }
 }

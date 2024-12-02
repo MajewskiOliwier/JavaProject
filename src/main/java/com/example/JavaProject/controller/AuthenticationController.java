@@ -38,7 +38,7 @@ public class AuthenticationController {
                     description = "User authenticated successfully",
                     content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
             @ApiResponse(
-                    responseCode = "400",
+                    responseCode = "401",
                     description = "invalid password",
                     content = @Content(schema = @Schema(implementation = ErrorInfo.class))),
             @ApiResponse(
