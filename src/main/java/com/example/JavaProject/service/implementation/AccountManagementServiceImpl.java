@@ -39,7 +39,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
             return "User cannot promote oneself";
         }
 
-        if(user.getRole().getName() == "ROLE_ADMIN"){
+        if(user.getRole().getName().equalsIgnoreCase("ROLE_ADMIN")){
             return "User with id"+id+" already is an admin";
         }
 
@@ -105,8 +105,13 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     }
 
     @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public String getInfoByEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                        () -> new RuntimeException("User not found with email: " + email));
+        if (user.isHidden())
+            throw new ProfileHiddenException("Profile is hidden");
+
+        return "User profile is visible";
     }
 
     @Override

@@ -21,7 +21,7 @@ public class IngredientServiceImpl implements IngredientService {
         List<Ingredient> ingredients = ingredientRepository.findAllByIngredientNameContainingIgnoreCase(phrase);
 
         return ingredients.stream()
-                .map(ingredient -> ingredientsMapper.mapToResponse(ingredient))
+                .map(ingredientsMapper::mapToResponse)
                 .toList();
     }
 }
