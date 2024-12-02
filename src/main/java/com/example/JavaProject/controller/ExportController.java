@@ -27,7 +27,7 @@ public class ExportController {
     public ResponseEntity<byte[]> exportRecipes(
                             @RequestParam(defaultValue = "json") final String format) throws IOException {
         
-        List<RecipeDto> recipes = recipeService.getAllRecipeDtos();
+        List<RecipeDto> recipes = recipeService.getAllRecipes();
         byte[] data;
         
         if (format.equalsIgnoreCase("xml")) {
