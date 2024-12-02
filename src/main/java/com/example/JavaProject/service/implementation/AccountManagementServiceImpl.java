@@ -51,16 +51,6 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         return "User has been successfully deleted";
     }
 
-    private User getUser() {
-        Long userId = authenticationService.getCurrentUserId();
-
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new PreAuthenticatedCredentialsNotFoundException("No user found with currently logged account."));
-
-        if(user.isHidden()) throw new ProfileHiddenException();
-        return user;
-    }
-
     @Override
     public String getInfoByEmail(String email) {
         User user = userRepository.findByEmail(email)
@@ -76,8 +66,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
             throw new RuntimeException("User cannot promote oneself");
 
         String adminRole = "ROLE_ADMIN";
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User user = getUser(id);
 
         if(user.getRole().getName().equalsIgnoreCase(adminRole))
             throw new RuntimeException("User with id: "+id+" already is an admin");
@@ -92,13 +81,27 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public String hideAccount(long id, boolean hidden) {
-        User user = userRepository.findById(id)
-                        .orElseThrow(() -> new UserNotFoundException(id));
+        User user = getUser(id);
 
         user.setHidden(hidden);
         userRepository.save(user);
         return hidden ?
                 "User account has been successfully hidden." :
                 "User account has been successfully unhidden.";
+    }
+
+    private User getUser(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    private User getUser() {
+        Long userId = authenticationService.getCurrentUserId();
+
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new PreAuthenticatedCredentialsNotFoundException("No user found with currently logged account."));
+
+        if(user.isHidden()) throw new ProfileHiddenException();
+        return user;
     }
 }
