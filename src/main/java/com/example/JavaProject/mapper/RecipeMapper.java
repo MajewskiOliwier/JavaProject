@@ -15,7 +15,7 @@ public class RecipeMapper {
         this.ingredientsMapper = ingredientsMapper;
     }
 
-    public Recipe mapToEntity(RecipeDto recipeDto){
+    public Recipe mapToEntity(RecipeDto recipeDto) {
         Recipe newRecipe = new Recipe();
         newRecipe.setId(recipeDto.getId());
         newRecipe.setRecipeName(recipeDto.getRecipeName());
@@ -42,11 +42,10 @@ public class RecipeMapper {
                             .collect(Collectors.toList())
             );
         }
-
         return newRecipe;
     }
 
-    public RecipeDto mapToDto(Recipe recipe){
+    public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto newRecipeDto = new RecipeDto();
         newRecipeDto.setId(recipe.getId());
         newRecipeDto.setRecipeName(recipe.getRecipeName());

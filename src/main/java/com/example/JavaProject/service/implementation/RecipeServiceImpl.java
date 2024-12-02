@@ -18,16 +18,17 @@ import com.example.JavaProject.service.interfaces.AuthenticationService;
 import com.example.JavaProject.service.interfaces.RecipeService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
 public class RecipeServiceImpl implements RecipeService {
+
     private RecipeRepository recipeRepository;
     private IngredientRepository ingredientRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
@@ -39,7 +40,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public List<RecipeDto> getAllRecipes() {
         List<Recipe> recipes = recipeRepository.findAll();
-        return extractedMethod(recipes);
+        return getMappedRecipeDtos(recipes);
     }
 
 
@@ -48,41 +49,23 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(
                                 () -> new RecipeNotFoundException(id));
 
-        if (isHidden(recipe)) {
-            throw new ProfileHiddenException();
-        }
+        if (isHidden(recipe)) throw new ProfileHiddenException();
 
-        RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-        List<IngredientDto> ingredientDtos = recipeDto.getIngredients();
-
-        return getRecipeDto(recipeDto, ingredientDtos);
+        return recipeMapper.mapToDto(recipe);
     }
 
-    private static RecipeDto getRecipeDto(RecipeDto recipeDto, List<IngredientDto> ingredientDtos) {
-        RecipeDto recipeResponse = new RecipeDto();
-        recipeResponse.setRecipeName(recipeDto.getRecipeName());
-        recipeResponse.setDifficulty(recipeDto.getDifficulty());
-        recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
-        recipeResponse.setAuthor(recipeDto.getAuthor());
-        recipeResponse.setLikes(recipeDto.getLikes());
-        recipeResponse.setIngredients(ingredientDtos);
-        return recipeResponse;
-    }
     @Override
     public String addRecipe(RecipeDto recipeDto) {
         Long userId = authenticationService.getCurrentUserId();
 
-        if (userId == null) {
-            return "User not logged in";
-        }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(
+                        () -> new RuntimeException("User not found"));
 
-        if (user.isHidden()) {
-            return "User is banned";
-        }
+        if (user.isHidden()) throw new ProfileHiddenException();
 
         Recipe recipe = recipeMapper.mapToEntity(recipeDto);
+
+        AddNewIngredients(recipeDto, recipe);
         List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 
         recipe.setUser(user);
@@ -113,18 +96,18 @@ public class RecipeServiceImpl implements RecipeService {
     @Transactional
     @Override
     public String modifyRecipe(long id, RecipeDto recipeDto) {
-        Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("ID not found"));
+        Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(
+                    () -> new RuntimeException("ID not found"));
 
-        if (!isOwner(updatedRecipe)) {
-            return "User can only modify their recipe";
-        }
+        if (!isOwner(updatedRecipe))
+                throw new AccessDeniedException("User can only modify their recipe");
 
-        if (isHidden(updatedRecipe)) {
-            return "User is banned";
-        }
+        if (isHidden(updatedRecipe)) throw new ProfileHiddenException();
 
 
-        UpdateRecipeData(recipeDto, updatedRecipe);
+        updatedRecipe.setRecipeName(recipeDto.getRecipeName());
+        updatedRecipe.setDifficulty(recipeDto.getDifficulty());
+        updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
 
         List<RecipeIngredient> existingIngredients = new ArrayList<>(updatedRecipe.getRecipeIngredients());
 
@@ -132,6 +115,13 @@ public class RecipeServiceImpl implements RecipeService {
         AddNewIngredients(recipeDto, updatedRecipe);
 
         return "Recipe is modified";
+    }
+
+    @Override
+    public List<RecipeDto> findRecipesByIngredient(String ingredientName) {
+        List<Recipe> recipes = recipeRepository.findRecipesByIngredientName(ingredientName);
+
+        return getMappedRecipeDtos(recipes);
     }
 
     private boolean isOwner(Recipe updatedRecipe) {
@@ -142,18 +132,11 @@ public class RecipeServiceImpl implements RecipeService {
         return updatedRecipe.getUser().isHidden();
     }
 
-    private static void UpdateRecipeData(RecipeDto recipeDto, Recipe updatedRecipe) {
-        updatedRecipe.setRecipeName(recipeDto.getRecipeName());
-        updatedRecipe.setDifficulty(recipeDto.getDifficulty());
-        updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
-    }
-
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
         for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
             Ingredient ingredient = new Ingredient();
             ingredient.setIngredientName(ingredientDto.getIngredientName());
             ingredient.setMeasurement(ingredientDto.getMeasurement());
-            ingredient.setIngredientsRecipe(new ArrayList<>());
 
             RecipeIngredient recipeIngredient = new RecipeIngredient();
             recipeIngredient.setQuantity(ingredientDto.getQuantity());
@@ -168,55 +151,28 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void RemoveOldIngredients(RecipeDto recipeDto, List<RecipeIngredient> existingIngredients) {
+
         for (RecipeIngredient recipeIngredient : existingIngredients) {
             boolean unchangedIngredient = recipeDto.getIngredients()
                     .stream()
-                    .anyMatch(ingredientDto -> (ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName())
-                            && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
+                    .anyMatch(ingredientDto -> isSameIngredient(recipeIngredient, ingredientDto));
 
-            if (!unchangedIngredient) {
-                recipeIngredient.getRecipe().getRecipeIngredients().remove(recipeIngredient);
-                recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
-                recipeIngredient.setRecipe(null);
-                recipeIngredient.setIngredient(null);
+            if (unchangedIngredient) continue;
 
-                recipeIngredientRepository.delete(recipeIngredient);
-            }
+            recipeIngredientRepository.delete(recipeIngredient);
         }
     }
 
-    @Override
-    public List<RecipeDto> findRecipesByIngredient(String ingredientName) {
-        List<Recipe> recipes = recipeRepository.findRecipesByIngredientName(ingredientName);
-
-        return extractedMethod(recipes);
+    private static boolean isSameIngredient(RecipeIngredient recipeIngredient, IngredientDto ingredientDto) {
+        return ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName()) &&
+                ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement());
     }
 
-    private List<RecipeDto> extractedMethod(List<Recipe> recipes) {
-        List<RecipeDto> recipeResponses = new ArrayList<>();
-        for (Recipe recipe : recipes) {
-            if (isHidden(recipe)) {
-                continue;
-            }
+    private List<RecipeDto> getMappedRecipeDtos(List<Recipe> recipes) {
 
-            RecipeDto recipeDto = recipeMapper.mapToDto(recipe);
-
-            List<IngredientDto> ingredientDtos = new ArrayList<>();
-            for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
-                ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
-            }
-
-            RecipeDto recipeResponse = getRecipeDto(recipeDto, ingredientDtos);
-            recipeResponses.add(recipeResponse);
-        }
-
-        return recipeResponses;
-    }
-
-    public List<RecipeDto> getAllRecipeDtos() {
-        List<Recipe> recipes = recipeRepository.findAll();
         return recipes.stream()
-                    .map(recipeMapper::mapToDto)
-                    .collect(Collectors.toList());
+                .filter(recipe -> !isHidden(recipe))
+                .map(recipeMapper::mapToDto)
+                .toList();
     }
 }

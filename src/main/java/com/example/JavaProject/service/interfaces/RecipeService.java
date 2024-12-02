@@ -15,8 +15,4 @@ public interface RecipeService {
     String modifyRecipe(long id, RecipeDto recipeDto);
 
     List<RecipeDto> findRecipesByIngredient(String ingredientName);
-
-    List<RecipeDto> getAllRecipeDtos();
-
-
 }
