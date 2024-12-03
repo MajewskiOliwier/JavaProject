@@ -1,14 +1,13 @@
 package com.example.JavaProject.mapper;
 
-import com.example.JavaProject.dto.IngredientDto;
 import com.example.JavaProject.dto.RecipeDto;
 import com.example.JavaProject.entity.Ingredient;
 import com.example.JavaProject.entity.Recipe;
 import com.example.JavaProject.entity.RecipeIngredient;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 public class RecipeMapper {
@@ -17,13 +16,12 @@ public class RecipeMapper {
         this.ingredientsMapper = ingredientsMapper;
     }
 
-    public Recipe mapToEntity(RecipeDto recipeDto){
+    public Recipe mapToEntity(RecipeDto recipeDto) {
         Recipe newRecipe = new Recipe();
         newRecipe.setRecipeName(recipeDto.getRecipeName());
         newRecipe.setPreparationTime(recipeDto.getPreparationTime());
         newRecipe.setDifficulty(recipeDto.getDifficulty());
-//        newRecipe.setIngredients(recipeDto.getIngredients());
-
+        newRecipe.setRecipeProcedures(recipeDto.getRecipeProcedures());
 
 
         if (recipeDto.getIngredients() != null) {
@@ -49,6 +47,7 @@ public class RecipeMapper {
 
         return newRecipe;
     }
+
 
 //    public RecipeDto mapToDto(Recipe recipe){
 //        RecipeDto newRecipeDto = new RecipeDto();
@@ -77,34 +76,32 @@ public class RecipeMapper {
 //        return newRecipeDto;
 //    }
 
-    public RecipeDto mapToDto(Recipe recipe){
+    public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto newRecipeDto = new RecipeDto();
         newRecipeDto.setRecipeName(recipe.getRecipeName());
         newRecipeDto.setDifficulty(recipe.getDifficulty());
         newRecipeDto.setPreparationTime(recipe.getPreparationTime());
         newRecipeDto.setAuthor(recipe.getUser().getNormalUsername());
-        newRecipeDto.setLikes((int)recipe.getLikedby().stream().count());
+        newRecipeDto.setLikes((int) recipe.getLikedby().stream().count());
+
+        // Add numbering to each procedure step
+        if (recipe.getRecipeProcedures() != null) {
+            newRecipeDto.setRecipeProcedures(
+                    IntStream.range(0, recipe.getRecipeProcedures().size())
+                            .mapToObj(index -> (index + 1) + ". " + recipe.getRecipeProcedures().get(index))
+                            .collect(Collectors.toList())
+            );
+        }
 
         if (recipe.getRecipeIngredients() != null && !recipe.getRecipeIngredients().isEmpty()) {
             newRecipeDto.setIngredients(
                     recipe.getRecipeIngredients()
                             .stream()
-//                            .map(recipeIngredient -> {
-//                                IngredientDto ingredientDto = new IngredientDto();
-//
-//                                Ingredient ingredient = recipeIngredient.getIngredient();
-//                                ingredientDto.setIngredientName(ingredient.getIngredientName());
-//                                ingredientDto.setMesurement(ingredient.getMesurement());
-//                                ingredientDto.setQuantity(recipeIngredient.getQuantity());
-//
-//                                return ingredientDto;
-//                            })
-                            .map(ingredientsMapper::mapToDto)  // Use the new mapToDto method that includes quantity
+                            .map(ingredientsMapper::mapToDto) // Use the existing mapper for ingredients
                             .collect(Collectors.toList())
             );
         }
 
         return newRecipeDto;
     }
-
 }
