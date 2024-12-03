@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class RecipeDto {
 
+    @JsonProperty("recipeID")
+    @JacksonXmlProperty(localName = "recipeID")
+    private Long recipeID;
 
     @JsonProperty("recipeName")
     @JacksonXmlProperty(localName = "recipeName")

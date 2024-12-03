@@ -78,13 +78,13 @@ public class RecipeMapper {
 
     public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto newRecipeDto = new RecipeDto();
+        newRecipeDto.setRecipeID(recipe.getId());
         newRecipeDto.setRecipeName(recipe.getRecipeName());
         newRecipeDto.setDifficulty(recipe.getDifficulty());
         newRecipeDto.setPreparationTime(recipe.getPreparationTime());
         newRecipeDto.setAuthor(recipe.getUser().getNormalUsername());
         newRecipeDto.setLikes((int) recipe.getLikedby().stream().count());
 
-        // Add numbering to each procedure step
         if (recipe.getRecipeProcedures() != null) {
             newRecipeDto.setRecipeProcedures(
                     IntStream.range(0, recipe.getRecipeProcedures().size())

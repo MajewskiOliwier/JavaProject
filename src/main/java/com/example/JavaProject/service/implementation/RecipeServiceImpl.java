@@ -80,6 +80,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     private static RecipeResponse getRecipeResponse(RecipeDto recipeDto, List<IngredientDto> ingredientDtos) {
         RecipeResponse recipeResponse = new RecipeResponse();
+        recipeResponse.setRecipeID(recipeDto.getRecipeID() != null ? recipeDto.getRecipeID() : 0L);
         recipeResponse.setRecipeName(recipeDto.getRecipeName());
         recipeResponse.setDifficulty(recipeDto.getDifficulty());
         recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
