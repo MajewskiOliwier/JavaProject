@@ -49,7 +49,7 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(
                                 () -> new RecipeNotFoundException(id));
 
-        if (isHidden(recipe)) throw new ProfileHiddenException();
+        isHidden(recipe);
 
         return recipeMapper.mapToDto(recipe);
     }
@@ -102,12 +102,10 @@ public class RecipeServiceImpl implements RecipeService {
         if (!isOwner(updatedRecipe))
                 throw new AccessDeniedException("User can only modify their recipe");
 
-        if (isHidden(updatedRecipe)) throw new ProfileHiddenException();
+        isHidden(updatedRecipe);
 
 
-        updatedRecipe.setRecipeName(recipeDto.getRecipeName());
-        updatedRecipe.setDifficulty(recipeDto.getDifficulty());
-        updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
+        setRecipeFields(recipeDto, updatedRecipe);
 
         List<RecipeIngredient> existingIngredients = new ArrayList<>(updatedRecipe.getRecipeIngredients());
 
@@ -115,6 +113,12 @@ public class RecipeServiceImpl implements RecipeService {
         AddNewIngredients(recipeDto, updatedRecipe);
 
         return "Recipe is modified";
+    }
+
+    private static void setRecipeFields(RecipeDto recipeDto, Recipe updatedRecipe) {
+        updatedRecipe.setRecipeName(recipeDto.getRecipeName());
+        updatedRecipe.setDifficulty(recipeDto.getDifficulty());
+        updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
     }
 
     @Override
@@ -128,8 +132,14 @@ public class RecipeServiceImpl implements RecipeService {
         return Objects.equals(updatedRecipe.getUser().getId(), authenticationService.getCurrentUserId());
     }
 
-    public static boolean isHidden(Recipe updatedRecipe) {
+    public static boolean checkIfHidden(Recipe updatedRecipe) {
         return updatedRecipe.getUser().isHidden();
+    }
+
+    public static void isHidden(Recipe recipe) {
+        if(recipe.getUser().isHidden() == true){
+            throw new ProfileHiddenException();
+        }
     }
 
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
@@ -171,7 +181,7 @@ public class RecipeServiceImpl implements RecipeService {
     private List<RecipeDto> getMappedRecipeDtos(List<Recipe> recipes) {
 
         return recipes.stream()
-                .filter(recipe -> !isHidden(recipe))
+                .filter(recipe -> !checkIfHidden(recipe))
                 .map(recipeMapper::mapToDto)
                 .toList();
     }
