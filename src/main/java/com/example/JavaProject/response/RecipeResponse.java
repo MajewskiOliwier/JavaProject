@@ -20,4 +20,5 @@ public class RecipeResponse {   //FIXME: where ID???
     private int difficulty;
     private int likes;
     private List<IngredientDto> ingredients;
+    private List<String> procedures;
 }

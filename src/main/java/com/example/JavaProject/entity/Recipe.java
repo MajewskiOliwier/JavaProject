@@ -60,4 +60,8 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe")
     private List<RecipeIngredient> recipeIngredients;
 
+    @ElementCollection
+    @CollectionTable(name = "recipe_procedures", joinColumns = @JoinColumn(name = "recipe_id"))
+    @Column(name = "recipeProcedures")
+    private List<String> recipeProcedures;
 }

@@ -48,6 +48,11 @@ public class RecipeDto {
 
     private int likes;
 
+    @JsonProperty("recipeProcedures")
+    @JacksonXmlProperty(localName = "recipeProcedures")
+    @Size(min = 1, message = "At least one procedure step is required")
+    private List<String> recipeProcedures;
+
     // Konstruktor przyjmujący obiekt Recipe
     public RecipeDto(Recipe recipe) {
         this.recipeName = recipe.getRecipeName();

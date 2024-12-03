@@ -86,6 +86,7 @@ public class RecipeServiceImpl implements RecipeService {
         recipeResponse.setAuthor(recipeDto.getAuthor());
         recipeResponse.setLikes(recipeDto.getLikes());
         recipeResponse.setIngredients(ingredientDtos);
+        recipeResponse.setProcedures(recipeDto.getRecipeProcedures());
         return recipeResponse;
     }
     @Override
@@ -123,6 +124,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         recipe.setRecipeIngredients(recipeIngredients);
+        recipe.setRecipeProcedures(recipeDto.getRecipeProcedures());
 
         recipeRepository.save(recipe);
         recipeIngredientRepository.saveAll(recipeIngredients);
@@ -166,6 +168,7 @@ public class RecipeServiceImpl implements RecipeService {
         updatedRecipe.setRecipeName(recipeDto.getRecipeName());
         updatedRecipe.setDifficulty(recipeDto.getDifficulty());
         updatedRecipe.setPreparationTime(recipeDto.getPreparationTime());
+        updatedRecipe.setRecipeProcedures(recipeDto.getRecipeProcedures());
     }
 
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
