@@ -149,9 +149,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         UpdateRecipeData(recipeDto, updatedRecipe);
 
-        List<RecipeIngredient> existingIngredients = new ArrayList<>(updatedRecipe.getRecipeIngredients());
-
-        RemoveOldIngredients(recipeDto, existingIngredients);
+        RemoveOldIngredients(recipeDto, updatedRecipe);
         AddNewIngredients(recipeDto, updatedRecipe);
 
         return "Recipe is modified";
@@ -173,7 +171,15 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     private void AddNewIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
-        for (IngredientDto ingredientDto : recipeDto.getIngredients()) {
+        List<IngredientDto> newIngredients = recipeDto.getIngredients();
+        List<IngredientDto> ingredientsToAdd = newIngredients.stream()
+                .filter(ingredientDto -> updatedRecipe.getRecipeIngredients().stream()
+                        .noneMatch(existingIngredient ->
+                                existingIngredient.getIngredient().getIngredientName().equalsIgnoreCase(ingredientDto.getIngredientName()) &&
+                                        existingIngredient.getIngredient().getMeasurement().equalsIgnoreCase(ingredientDto.getMeasurement())))
+                .toList();
+
+        for (IngredientDto ingredientDto : ingredientsToAdd) {
             Ingredient ingredient = new Ingredient();
             ingredient.setIngredientName(ingredientDto.getIngredientName());
             ingredient.setMeasurement(ingredientDto.getMeasurement());
@@ -191,23 +197,31 @@ public class RecipeServiceImpl implements RecipeService {
         }
     }
 
-    private void RemoveOldIngredients(RecipeDto recipeDto, List<RecipeIngredient> existingIngredients) {
-        for (RecipeIngredient recipeIngredient : existingIngredients) {
-            boolean unchangedIngredient = recipeDto.getIngredients()
-                    .stream()
-                    .anyMatch(ingredientDto -> (ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName())
-                            && ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement())));
+    private void RemoveOldIngredients(RecipeDto recipeDto, Recipe updatedRecipe) {
+        List<RecipeIngredient> existingIngredients = new ArrayList<>(updatedRecipe.getRecipeIngredients());
 
-            if (!unchangedIngredient) {
-                recipeIngredient.getRecipe().getRecipeIngredients().remove(recipeIngredient);
+        for (RecipeIngredient recipeIngredient : existingIngredients) {
+            Optional<IngredientDto> matchingIngredientDto = recipeDto.getIngredients().stream()
+                    .filter(ingredientDto ->
+                            ingredientDto.getIngredientName().equalsIgnoreCase(recipeIngredient.getIngredient().getIngredientName()) &&
+                                    ingredientDto.getMeasurement().equalsIgnoreCase(recipeIngredient.getIngredient().getMeasurement()))
+                    .findFirst();
+
+            if (matchingIngredientDto.isPresent()) {
+                recipeIngredient.setQuantity(matchingIngredientDto.get().getQuantity());
+            } else {
+                updatedRecipe.getRecipeIngredients().remove(recipeIngredient);
                 recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
                 recipeIngredient.setRecipe(null);
                 recipeIngredient.setIngredient(null);
-
                 recipeIngredientRepository.delete(recipeIngredient);
             }
         }
+
+        recipeRepository.save(updatedRecipe);
     }
+
+
 
     @Override
     public List<RecipeResponse> findRecipesByIngredient(String ingredientName) {
