@@ -56,11 +56,11 @@ public class RecipeDto {
     @Size(min = 1, message = "At least one procedure step is required")
     private List<String> recipeProcedures;
 
-    // Konstruktor przyjmujący obiekt Recipe
     public RecipeDto(Recipe recipe) {
         this.recipeName = recipe.getRecipeName();
         this.preparationTime = recipe.getPreparationTime();
         this.difficulty = recipe.getDifficulty();
+        this.recipeProcedures = recipe.getRecipeProcedures();
         this.ingredients = recipe.getRecipeIngredients().stream()
                 .map(recipeIngredient -> new IngredientDto(
                         recipeIngredient.getIngredient().getIngredientName(),
