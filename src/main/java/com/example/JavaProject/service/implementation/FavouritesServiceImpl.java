@@ -93,6 +93,7 @@ public class FavouritesServiceImpl implements FavouritesService {
             recipeResponse.setDifficulty(recipeDto.getDifficulty());
             recipeResponse.setAuthor(recipeDto.getAuthor());
             recipeResponse.setLikes(recipeDto.getLikes());
+            recipeResponse.setProcedures(recipeDto.getRecipeProcedures());
             recipeResponses.add(recipeResponse);
         }
 
