@@ -6,6 +6,9 @@ import com.example.JavaProject.entity.User;
 import com.example.JavaProject.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -94,7 +97,7 @@ public class AuthenticationControllerTest {
                 .content(objectMapper.writeValueAsString(login)));
 
         result
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.message", is("User not found")));
     }
@@ -110,5 +113,50 @@ public class AuthenticationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.message", is("Invalid password")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"invalidEmail", "anotherInvalidEmail", "valid@email.com"})
+    public void testEmailValidation(String email) throws Exception {
+        RegisterDto register = new RegisterDto("testUser", 20, true, email, "password");
+
+        var result = mvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(register)));
+
+        if (email.contains("@")) {
+            result.andExpect(status().isOk())
+                    .andExpect(content().string("USER REGISTRATION SUCCESSFUL"));
+        } else {
+            result.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors.email", is("Invalid email format")));
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "email@email.com, false",
+            "newuser@email.com, true"
+    })
+    public void testEmailUniquenessValidation(String email, boolean shouldRegister) throws Exception {
+        RegisterDto registerDto = new RegisterDto("testUser", 25, true, email, "password123");
+
+        var result = mvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerDto)));
+
+        if (shouldRegister) {
+            result.andExpect(status().isOk())
+                    .andExpect(content().string("USER REGISTRATION SUCCESSFUL"));
+
+            assertThat(userRepository.findByEmail(email)).isPresent();
+        } else {
+            result.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", is(email + " Email is taken")));
+
+            assertThat(userRepository.findAll().stream()
+                    .filter(user -> user.getEmail().equals(email))
+                    .count()).isEqualTo(1);
+        }
     }
 }
