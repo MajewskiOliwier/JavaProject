@@ -20,7 +20,6 @@ public class RecipeIngredient {
 
     private Double quantity;
 
-    private String measurement;  // Dodane pole measurement
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "recipe_id", nullable = false)
@@ -30,12 +29,4 @@ public class RecipeIngredient {
     @JoinColumn(name = "ingredient_id", nullable = false)
     private Ingredient ingredient;
 
-    // Gettery i settery, jeśli nie używasz Lombok (ale z Lombok nie musisz ich pisać ręcznie)
-    public String getMeasurement() {
-        return measurement;
-    }
-
-    public void setMeasurement(String measurement) {
-        this.measurement = measurement;
-    }
 }
