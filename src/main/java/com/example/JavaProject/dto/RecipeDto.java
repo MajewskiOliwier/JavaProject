@@ -65,7 +65,7 @@ public class RecipeDto {
                 .map(recipeIngredient -> new IngredientDto(
                         recipeIngredient.getIngredient().getIngredientName(),
                         recipeIngredient.getQuantity(),
-                        recipeIngredient.getMeasurement()))
+                        recipeIngredient.getIngredient().getMeasurement()))
                 .collect(Collectors.toList());
     }
 }
