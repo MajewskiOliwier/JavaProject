@@ -86,6 +86,7 @@ public class FavouritesServiceImpl implements FavouritesService {
             for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
                 ingredientDtos.add(ingredientsMapper.mapToDto(recipeIngredient));
             }
+            recipeResponse.setRecipeID(recipeDto.getRecipeID());
             recipeResponse.setIngredients(ingredientDtos);
             recipeResponse.setRecipeName(recipeDto.getRecipeName());
             recipeResponse.setPreparationTime(recipeDto.getPreparationTime());
