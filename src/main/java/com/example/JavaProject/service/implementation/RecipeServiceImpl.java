@@ -135,6 +135,35 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Transactional
     @Override
+    public String deleteRecipe(long id) {
+        Optional<Recipe> recipeOptional = recipeRepository.findById(id);
+        if (recipeOptional.isEmpty()) {
+            return "Recipe with ID " + id + " does not exist.";
+        }
+        Recipe recipe = recipeOptional.get();
+
+        if (!isOwner(recipe)) {
+            return "You are not allowed to delete this recipe.";
+        }
+
+        if (isHidden(recipe)) {
+            return "User is banned.";
+        }
+
+        recipe.getRecipeIngredients().forEach(recipeIngredient -> {
+            recipeIngredient.getIngredient().getIngredientsRecipe().remove(recipeIngredient);
+            recipeIngredient.setRecipe(null);
+            recipeIngredient.setIngredient(null);
+            recipeIngredientRepository.delete(recipeIngredient);
+        });
+
+        recipeRepository.delete(recipe);
+
+        return "Recipe deleted successfully.";
+    }
+
+    @Transactional
+    @Override
     public String modifyRecipe(long id, RecipeDto recipeDto) {
         Recipe updatedRecipe = recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("ID not found"));
 
