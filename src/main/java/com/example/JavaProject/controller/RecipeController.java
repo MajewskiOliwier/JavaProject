@@ -33,6 +33,16 @@ public class RecipeController {
         return new ResponseEntity<>(recipeService.addRecipe(recipeDto), HttpStatus.OK);
     }
 
+    @DeleteMapping("/recipes/{id}")
+    public ResponseEntity<String> deleteRecipe(@PathVariable long id) {
+        String message = recipeService.deleteRecipe(id);
+
+        if (message.contains("does not exist")) {
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
+
     @PutMapping("/recipes/{id}")
     public ResponseEntity<String> modifyRecipe(@PathVariable long id, @RequestBody RecipeDto recipeDto) {
         return new ResponseEntity<>(recipeService.modifyRecipe(id, recipeDto), HttpStatus.OK);

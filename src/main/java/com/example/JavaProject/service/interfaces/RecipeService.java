@@ -13,6 +13,8 @@ public interface RecipeService {
 
     String addRecipe(RecipeDto recipeDto);
 
+    String deleteRecipe(long id);
+
     String modifyRecipe(long id, RecipeDto recipeDto);
 
     List<RecipeResponse> findRecipesByIngredient(String ingredientName);

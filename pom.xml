@@ -161,10 +161,6 @@
 			<url>https://repo.spring.io/release</url>
 		</repository>
 		<repository>
-			<id>spring-snapshots</id>
-			<url>https://repo.spring.io/snapshot</url>
-		</repository>
-		<repository>
 			<id>maven-central</id>
 			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
