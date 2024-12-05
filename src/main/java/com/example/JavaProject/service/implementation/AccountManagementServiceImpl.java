@@ -29,7 +29,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     @Override
     public String promote(long id) {
         Optional<User> foundUser = userRepository.findById(id);
-        if(foundUser == null){
+        if(foundUser.isEmpty()){
             return "User with id"+id+" doesn't exist";
         }
 
